@@ -159,7 +159,35 @@ void DS3231::setDay(uint8_t data)
     Wire.endTransmission();
 }
 
+/*-----------------------------------------------------------
+getMonth
+-----------------------------------------------------------*/
+uint8_t DS3231::getMonth()
+{
+    uint8_t data;
 
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x05);  // Month Register
+    Wire.endTransmission();
+    delay(10);
+
+    Wire.requestFrom(DS3231_ADDR, 1);
+    data = Wire.read();
+    
+    //data = data & 0b00001111;
+
+    return (bcd2bin(data));
+}
+
+void DS3231::setMonth(uint8_t data)
+{
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x05);  // Month Register
+ 
+    Wire.write(bin2bcd(data));
+
+    Wire.endTransmission();
+}
 
 /*-----------------------------------------------------------
 getYear
@@ -195,41 +223,80 @@ void DS3231::setYear(uint16_t year)
     Wire.endTransmission();
 }
 
+
 /*-----------------------------------------------------------
-getMonth
+setTime
 -----------------------------------------------------------*/
-uint8_t DS3231::getMonth()
+
+void DS3231::setTime(uint8_t hour, uint8_t minute, uint8_t second)
 {
-    uint8_t data;
 
     Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x05);  // Month Register
+    Wire.write(0x00);  // Year Register
+
+    Wire.write(bin2bcd(second));
+    Wire.write(bin2bcd(minute));
+    Wire.write(bin2bcd(hour));
+
+    Wire.endTransmission();
+}
+
+
+/*-----------------------------------------------------------
+setDate
+-----------------------------------------------------------*/
+void DS3231::setDate(uint8_t day, uint8_t month, uint16_t year)
+{
+    if (year > 2000)
+    {
+        year = year - 2000;
+    }
+
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x04);  // Year Register
+
+    Wire.write(bin2bcd(day));
+    Wire.write(bin2bcd(month));
+    Wire.write(bin2bcd(year));
+
+    Wire.endTransmission();
+}
+
+/*-----------------------------------------------------------
+enableAlaram()
+-----------------------------------------------------------*/
+uint8_t DS3231::enableAlaram()
+{
+    uint8_t reg;
+
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x0E);  // Hour Register
     Wire.endTransmission();
     delay(10);
 
     Wire.requestFrom(DS3231_ADDR, 1);
-    data = Wire.read();
-    
-    //data = data & 0b00001111;
+    reg = Wire.read();
 
-    return (bcd2bin(data));
-}
+    //return (bcd2bin(data));
+    //return (data);
 
-void DS3231::setMonth(uint8_t data)
-{
+    bitWrite(reg,2,1); // Write bit INTCN to 1 to enable INT/SQW pin 
+
     Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x05);  // Month Register
+    Wire.write(0x0E);  // Month Register
  
-    Wire.write(bin2bcd(data));
+    Wire.write(bin2bcd(reg));
 
     Wire.endTransmission();
+
+
 }
+
 
 
 /*-----------------------------------------------------------
 DS3231 Exclusive Functions
 -----------------------------------------------------------*/
-
 bool DS3231::lostPower(void)
 {
     uint8_t data;
@@ -259,7 +326,9 @@ void DS3231::StartClock(void)
     Wire.requestFrom(DS3231_ADDR, 1);
     data = Wire.read();
 
-    data =  data & 0x7F; 
+    //data =  data & 0x7F; 
+
+    bitWrite(data,7,0); // Write  EOSC Register to 0 to start the clock. 
 
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x0F);  // Month Register

@@ -12,17 +12,27 @@
 
 #define DS3231_ADDR 0x68
 
+#define TIME_H12 0 
+#define TIME_H24 1
+
+#define Y1900 1900 
+#define Y1970 1970
+#define Y2000 2000
+
 class DS3231 {
 
     public:
       void begin();
 
-      void setYear(uint16_t);
+      void setYear(uint16_t year);
       void setMonth(uint8_t);
       void setDay(uint8_t);
-      void setSecond(uint8_t);
+      void setSecond(uint8_t data);
       void setMinute(uint8_t);
       void setHour(uint8_t);
+
+      void setDate(uint8_t,uint8_t,uint16_t);
+      void setTime(uint8_t,uint8_t,uint8_t);
 
       uint16_t getYear();
       uint8_t getMonth();
@@ -33,8 +43,10 @@ class DS3231 {
 
       uint8_t getWeek();
 
-      bool lostPower(void);
-      void StartClock(void);
+      uint8_t enableAlaram();
+
+      bool lostPower();
+      void StartClock();
       float getTemp();
 
     private:

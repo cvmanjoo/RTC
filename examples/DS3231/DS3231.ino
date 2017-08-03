@@ -18,21 +18,33 @@ void setup()
     if (RTC.lostPower())
     {
         Serial.println("Yes");
-            RTC.setDay(31);
-            RTC.setMonth(12);
-            RTC.setYear(2014);
-            RTC.setHour(23);
-            RTC.setMinute(59);
-            RTC.setSecond(46);
-            RTC.StartClock();
+        // RTC.setDay(31);
+        // RTC.setMonth(12);
+        // RTC.setYear(2014);
+        // RTC.setHour(23);
+        // RTC.setMinute(59);
+        // RTC.setSecond(46);
+
+        RTC.setTime(23,59,46);
+        RTC.setDate(31,12,2016);
+
+        RTC.StartClock();
     }
     else
         Serial.println("No");
 
-
     temp = RTC.getTemp();
     Serial.print("RTC Temperature : ");
     Serial.println(temp);
+
+    data = RTC.enableAlaram();
+
+    Serial.print("0x0E Register : ");
+    Serial.println(data,BIN);
+
+
+
+  
 }
 
 void loop()
@@ -51,8 +63,8 @@ void loop()
     Serial.print(":");
     Serial.print(RTC.getSecond());
 
-    Serial.println();    
     Serial.println();
-    
+    Serial.println();
+
     delay(1000);
 }
