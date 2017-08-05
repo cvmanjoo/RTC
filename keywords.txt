@@ -1,0 +1,53 @@
+#######################################
+# Syntax Coloring Map For RTC
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+DS3231 KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin KEYWORD2
+setSecond KEYWORD2
+setMinute KEYWORD2
+setHour KEYWORD2
+setDay KEYWORD2
+setMonth KEYWORD2
+setYear KEYWORD2
+setWeek KEYWORD2
+setDate KEYWORD2
+setTime KEYWORD2
+setEpoch KEYWORD2
+
+getYear KEYWORD2
+getMonth KEYWORD2
+getDay KEYWORD2
+getSecond KEYWORD2
+getMinute KEYWORD2
+getHour KEYWORD2
+
+getWeek KEYWORD2
+
+enableAlaram KEYWORD2
+
+lostPower KEYWORD2
+StartClock KEYWORD2
+getTemp KEYWORD2
+
+getRegister KEYWORD2
+setRegister KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+
+
+###################################################
+# https://www.arduino.cc/en/Hacking/LibraryTutorial
+###################################################

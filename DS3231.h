@@ -7,6 +7,7 @@
 #ifndef DS3231_H
 #define DS3231_H
 
+#include <Time.h>
 #include <Arduino.h>
 #include <Wire.h>
 
@@ -15,24 +16,24 @@
 #define TIME_H12 0 
 #define TIME_H24 1
 
-#define Y1900 1900 
-#define Y1970 1970
-#define Y2000 2000
-
 class DS3231 {
 
     public:
-      void begin();
+      bool begin();
 
+      void setSecond(uint8_t second);
+      void setMinute(uint8_t minute);
+      void setHour(uint8_t hour);
+      void setDay(uint8_t day);
+      void setMonth(uint8_t month);
       void setYear(uint16_t year);
-      void setMonth(uint8_t);
-      void setDay(uint8_t);
-      void setSecond(uint8_t data);
-      void setMinute(uint8_t);
-      void setHour(uint8_t);
 
-      void setDate(uint8_t,uint8_t,uint16_t);
-      void setTime(uint8_t,uint8_t,uint8_t);
+      void setWeek(uint8_t week);
+
+      void setDate(uint8_t day, uint8_t month, uint16_t year);
+      void setTime(uint8_t hour, uint8_t minute, uint8_t second);
+
+      void setEpoch(time_t epoch, time_t e_year, int16_t offset);
 
       uint16_t getYear();
       uint8_t getMonth();
@@ -43,11 +44,16 @@ class DS3231 {
 
       uint8_t getWeek();
 
+      time_t getEpoch();
+
       uint8_t enableAlaram();
 
       bool lostPower();
       void StartClock();
       float getTemp();
+
+      uint8_t getRegister(uint8_t reg);
+      void setRegister(uint8_t reg, uint8_t data);
 
     private:
       static uint8_t bin2bcd (uint8_t val);
@@ -55,5 +61,8 @@ class DS3231 {
 
 };
 
+//Instantiate class DS3231 as RTC
+
+static DS3231 RTC;
 
 #endif /* DS3231_H */
