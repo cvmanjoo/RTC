@@ -46,7 +46,21 @@ class DS3231 {
 
       time_t getEpoch();
 
-      uint8_t enableAlaram();
+      uint8_t enableAlarm();
+
+      void setAlarm1();
+      void setAlarm1(uint8_t second);
+      void setAlarm1(uint8_t second, uint8_t minute);
+      void setAlarm1(uint8_t second, uint8_t minute, uint8_t hour);
+      void setAlarm1(uint8_t second, uint8_t minute, uint8_t hour, uint8_t day);
+
+      void setAlarm2();
+      void setAlarm2(uint8_t minute);
+      void setAlarm2(uint8_t minute, uint8_t hour);
+      void setAlarm2(uint8_t minute, uint8_t hour, uint8_t day);
+
+      bool isAlarm1Tiggered();
+      bool isAlarm2Tiggered();
 
       bool lostPower();
       void StartClock();

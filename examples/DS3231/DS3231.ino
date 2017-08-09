@@ -33,13 +33,17 @@ void setup()
     else
         Serial.println("No");
 */
-    //RTC.setTime(23,59,52);
-    //RTC.setDate(31,12,1999);
+    RTC.setTime(9,39,52);
+    RTC.setDate(9,12,2017);
 
-  RTC.setEpoch(3710945875,NTP_OFFSET,0);
+  //RTC.setEpoch(3710945875,NTP_OFFSET,0);
   //RTC.setEpoch(0,0,0);
   
-  RTC.StartClock();
+  //RTC.StartClock();
+
+RTC.setAlarm2(40,9,9);
+
+
 }
 
 void loop()
@@ -57,7 +61,14 @@ void loop()
     Serial.print(RTC.getMinute());
     Serial.print(":");
     Serial.print(RTC.getSecond());
-
+    Serial.println(" ");
 
     delay(1000);
+
+    if(RTC.isAlarm2Tiggered())
+    
+        Serial.println("isAlarm2Tiggered : Yes ");
+    
+    else
+        Serial.println("isAlarm2Tiggered : No ");
 }
