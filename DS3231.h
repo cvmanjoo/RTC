@@ -70,12 +70,12 @@ class DS3231 {
       void StartClock();
       float getTemp();
 
-      uint8_t getRegister(uint8_t reg);
-      void setRegister(uint8_t reg, uint8_t data);
+      //uint8_t getRegister(uint8_t reg);
+      //void setRegister(uint8_t reg, uint8_t data);
 
     private:
-      static uint8_t bin2bcd (uint8_t val);
-      static uint8_t bcd2bin (uint8_t val);
+      uint8_t bin2bcd (uint8_t val);
+      uint8_t bcd2bin (uint8_t val);
 
 };
 

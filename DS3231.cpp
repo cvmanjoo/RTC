@@ -8,7 +8,6 @@
 #include <Wire.h>
 #include "DS3231.h"
 
-
 bool DS3231::begin()
 {
     Wire.begin(); // join i2c bus
@@ -44,7 +43,6 @@ void DS3231::setSecond(uint8_t second)
     Wire.write(bin2bcd(second));
     Wire.endTransmission();
 }
-
 
 /*-----------------------------------------------------------
 getMinute
@@ -90,7 +88,6 @@ void  DS3231::setHour(uint8_t hour)
     Wire.endTransmission();
 }
 
-
 /*-----------------------------------------------------------
 getWeek
 -----------------------------------------------------------*/
@@ -113,11 +110,9 @@ void DS3231::setWeek(uint8_t week)
     Wire.endTransmission();
 }
 
-
 /*-----------------------------------------------------------
 getDay
------------------------------------------------------------*/
-      
+-----------------------------------------------------------*/      
 uint8_t DS3231::getDay()
 {
     uint8_t day;
@@ -246,7 +241,6 @@ void DS3231::setYear(uint16_t year)
     Wire.endTransmission();
 }
 
-
 /*-----------------------------------------------------------
 setTime
 -----------------------------------------------------------*/
@@ -261,7 +255,6 @@ void DS3231::setTime(uint8_t hour, uint8_t minute, uint8_t second)
     Wire.write(bin2bcd(hour));
     Wire.endTransmission();
 }
-
 
 /*-----------------------------------------------------------
 setDate (Should be Optimised)
@@ -521,111 +514,53 @@ void DS3231::setAlarm1()
 
 void DS3231::setAlarm1(uint8_t second)
 {
-    uint8_t data;
-
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.endTransmission();
-    Wire.requestFrom(DS3231_ADDR, 1);
-    data = Wire.read();
-    bitWrite(data,0,1);             // Write  A1IE Register to 1 to enable Alarm 1 
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.write(bin2bcd(data));
-    Wire.endTransmission();
-
-    second = bin2bcd(second) | 0x80;
-
+    enableAlarm1();
+    
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x07);               
-    Wire.write(second);    // 0x07 Alarm1 Second
-    Wire.write(0x00);               // 0x08 Alarm1 Minute
-    Wire.write(0x00);               // 0x09 Alarm1 Hour
-    Wire.write(0x00);               // 0x0A Alarm1 Day
+    Wire.write(bin2bcd(second));    // 0x07 Alarm1 Second
+    Wire.write(0x80);               // 0x08 Alarm1 Minute
+    Wire.write(0x80);               // 0x09 Alarm1 Hour
+    Wire.write(0x80);               // 0x0A Alarm1 Day
     Wire.endTransmission();
 }
 
 void DS3231::setAlarm1(uint8_t second, uint8_t minute)
 {
-    uint8_t data;
-
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.endTransmission();
-    Wire.requestFrom(DS3231_ADDR, 1);
-    data = Wire.read();
-    bitWrite(data,0,1);             // Write  A1IE Register to 1 to enable Alarm 1 
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.write(bin2bcd(data));
-    Wire.endTransmission();
-
-    second = bin2bcd(second) | 0x80;
-    minute = bin2bcd(minute) | 0x80;
+    enableAlarm1();
 
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x07);               
-    Wire.write(second);    // 0x07 Alarm1 Second
-    Wire.write(minute);    // 0x08 Alarm1 Minute
-    Wire.write(0x00);               // 0x09 Alarm1 Hour
-    Wire.write(0x00);               // 0x0A Alarm1 Day
+    Wire.write(bin2bcd(second));    // 0x07 Alarm1 Second
+    Wire.write(bin2bcd(minute));    // 0x08 Alarm1 Minute
+    Wire.write(0x80);               // 0x09 Alarm1 Hour
+    Wire.write(0x80);               // 0x0A Alarm1 Day
     Wire.endTransmission();
 }
 
 void DS3231::setAlarm1(uint8_t second, uint8_t minute, uint8_t hour)
 {
-    uint8_t data;
-
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.endTransmission();
-    Wire.requestFrom(DS3231_ADDR, 1);
-    data = Wire.read();
-    bitWrite(data,0,1);             // Write  A1IE Register to 1 to enable Alarm 1 
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.write(bin2bcd(data));
-    Wire.endTransmission();
-
-    second = bin2bcd(second) | 0x80;
-    minute = bin2bcd(minute) | 0x80;
-    hour = bin2bcd(hour) | 0x80;
+    enableAlarm1();
 
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x07);               
-    Wire.write(second);    // 0x07 Alarm1 Second
-    Wire.write(minute);    // 0x08 Alarm1 Minute
-    Wire.write(hour);      // 0x09 Alarm1 Hour
-    Wire.write(0x00);               // 0x0A Alarm1 Day
+    Wire.write(bin2bcd(second));    // 0x07 Alarm1 Second
+    Wire.write(bin2bcd(minute));    // 0x08 Alarm1 Minute
+    Wire.write(bin2bcd(hour));      // 0x09 Alarm1 Hour
+    Wire.write(0x80);               // 0x0A Alarm1 Day
     Wire.endTransmission();
 }
 
 void DS3231::setAlarm1(uint8_t second, uint8_t minute, uint8_t hour, uint8_t day)
 {
-    uint8_t data;
-
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.endTransmission();
-    Wire.requestFrom(DS3231_ADDR, 1);
-    data = Wire.read();
-    bitWrite(data,0,1);             // Write  A1IE Register to 1 to enable Alarm 1 
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.write(bin2bcd(data));
-    Wire.endTransmission();
-
-    second = bin2bcd(second) | 0x80;
-    minute = bin2bcd(minute) | 0x80;
-    hour = bin2bcd(hour) | 0x80;
-    day = bin2bcd(day) | 0x80;
+    enableAlarm1();
 
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x07);               
-    Wire.write(second);    // 0x07 Alarm1 Second
-    Wire.write(minute);    // 0x08 Alarm1 Minute
-    Wire.write(hour);      // 0x09 Alarm1 Hour
-    Wire.write(day);       // 0x0A Alarm1 Day
+    Wire.write(bin2bcd(second));    // 0x07 Alarm1 Second
+    Wire.write(bin2bcd(minute));    // 0x08 Alarm1 Minute
+    Wire.write(bin2bcd(hour));      // 0x09 Alarm1 Hour
+    Wire.write(bin2bcd(day));       // 0x0A Alarm1 Day
     Wire.endTransmission();
 }
 
@@ -633,6 +568,8 @@ void DS3231::setAlarm1(uint8_t second, uint8_t minute, uint8_t hour, uint8_t day
 
 void DS3231::setAlarm2()
 {
+    enableAlarm2();
+    
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x0B);               
     Wire.write(0x80);    // 0x0B Alarm2 Minute
@@ -643,91 +580,41 @@ void DS3231::setAlarm2()
 
 void DS3231::setAlarm2(uint8_t minute)
 {
-    uint8_t data;
-
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.endTransmission();
-    Wire.requestFrom(DS3231_ADDR, 1);
-    data = Wire.read();
-    bitWrite(data,1,1);             // Write  A2IE Register to 1 to enable Alarm 2 
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.write(bin2bcd(data));
-    Wire.endTransmission();
-
-  
-
-    minute = bin2bcd(minute) | 0x80;
+    enableAlarm2();
 
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x0B);               
-    Wire.write(minute);    // 0x0B Alarm2 Minute
-    Wire.write(0x00);               // 0x0C Alarm2 Hour
-    Wire.write(0x00);               // 0x0D Alarm2 Day
+    Wire.write(bin2bcd(minute));    // 0x0B Alarm2 Minute
+    Wire.write(0x80);               // 0x0C Alarm2 Hour
+    Wire.write(0x80);               // 0x0D Alarm2 Day
     Wire.endTransmission();
 }
 
 void DS3231::setAlarm2(uint8_t minute, uint8_t hour)
 {
-    // uint8_t data;
-
-    // Wire.beginTransmission(DS3231_ADDR);                       
-    // Wire.write(0x0E);               // Control Register (0Eh)
-    // Wire.endTransmission();
-    // Wire.requestFrom(DS3231_ADDR, 1);
-    // data = Wire.read();
-    // bitWrite(data,1,1);             // Write  A2IE Register to 1 to enable Alarm 2 
-    // Wire.beginTransmission(DS3231_ADDR);                       
-    // Wire.write(0x0E);               // Control Register (0Eh)
-    // Wire.write(bin2bcd(data));
-    // Wire.endTransmission();
-
-      enableAlarm2();
-
-    minute = bin2bcd(minute) | 0x80;
-    hour = bin2bcd(hour) | 0x80;
+    enableAlarm2();
 
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x0B);               
-    Wire.write(minute);    // 0x0B Alarm2 Minute
-    Wire.write(hour);      // 0x0C Alarm2 Hour
-    Wire.write(0x00);      // 0x0D Alarm2 Day
+    Wire.write(bin2bcd(minute));    // 0x0B Alarm2 Minute
+    Wire.write(bin2bcd(hour));      // 0x0C Alarm2 Hour
+    Wire.write(0x80);      // 0x0D Alarm2 Day
     Wire.endTransmission();
 }
 
 void DS3231::setAlarm2(uint8_t minute, uint8_t hour, uint8_t day)
 {
-    uint8_t data;
-
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.endTransmission();
-    Wire.requestFrom(DS3231_ADDR, 1);
-    data = Wire.read();
-    bitWrite(data,1,1);             // Write A2IE Register to 1 to enable Alarm 2 
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0E);               // Control Register (0Eh)
-    Wire.write(bin2bcd(data));
-    Wire.endTransmission();
-
-   // Serial.print("CPP:Minute : ");
-    //Serial.print(minute,BIN);
-    //Serial.println(); 
-
-    minute = bin2bcd(minute) | 0x80;
-    hour = bin2bcd(hour) | 0x80;
-    day = bin2bcd(day) | 0x80;
-
+    enableAlarm2();
+ 
     //Serial.print("CPP:Minute : ");
     //Serial.print(minute,BIN);
     //Serial.println();  
 
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x0B);               
-    Wire.write(minute);    // 0x0B Alarm2 Minute
-    Wire.write(hour);      // 0x0C Alarm2 Hour
-    Wire.write(day);       // 0x0D Alarm2 Day
+    Wire.write(bin2bcd(minute));    // 0x0B Alarm2 Minute
+    Wire.write(bin2bcd(hour));      // 0x0C Alarm2 Hour
+    Wire.write(bin2bcd(day));       // 0x0D Alarm2 Day
     Wire.endTransmission();
 }
 
@@ -738,10 +625,8 @@ bool DS3231::isAlarm1Tiggered()
     Wire.write(0x0F);               // Control Register (0Fh)
     Wire.endTransmission();
     Wire.requestFrom(DS3231_ADDR, 1);
-    data = Wire.read();
-    bitWrite(data,1,1);              
+    data = Wire.read();            
     return (bitRead(data,0));
-
 }
 
 bool DS3231::isAlarm2Tiggered()
@@ -752,14 +637,8 @@ bool DS3231::isAlarm2Tiggered()
     Wire.endTransmission();
     Wire.requestFrom(DS3231_ADDR, 1);
     data = Wire.read();
-    bitWrite(data,1,1);
     return (bitRead(data,1));
-
 }
-
-
-
-
 
 /*-----------------------------------------------------------
 DS3231 Exclusive Functions
@@ -797,7 +676,6 @@ void DS3231::StartClock(void)
     Wire.endTransmission();
 }
 
-
 float DS3231::getTemp()
 {
     float f_temp;
@@ -816,16 +694,18 @@ float DS3231::getTemp()
     return(f_temp);
 }
 
-static uint8_t DS3231::bcd2bin (uint8_t val) 
+/* Helpers */
+
+uint8_t DS3231::bcd2bin (uint8_t val) 
 { 
     return val - 6 * (val >> 4); 
 }
-static uint8_t DS3231::bin2bcd (uint8_t val) 
+uint8_t DS3231::bin2bcd (uint8_t val) 
 { 
     return val + 6 * (val / 10); 
 }
 
-// Debug Functions
+/* Debug Functions
 uint8_t DS3231::getRegister(uint8_t reg)
 {
     Wire.beginTransmission(DS3231_ADDR);                       
@@ -843,3 +723,4 @@ void DS3231::setRegister(uint8_t reg, uint8_t data)
     Wire.write(data);
     Wire.endTransmission();
 }
+*/
