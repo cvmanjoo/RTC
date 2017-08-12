@@ -35,6 +35,8 @@ class DS3231 {
 
       void setEpoch(time_t epoch, time_t e_year, int16_t offset);
 
+      void setDateTime(char* date, char* time);
+
       uint16_t getYear();
       uint8_t getMonth();
       uint8_t getDay();
@@ -46,7 +48,9 @@ class DS3231 {
 
       time_t getEpoch();
 
-      uint8_t enableAlarm();
+      void enableAlarmPin();
+      void enableAlarm1();
+      void enableAlarm2();
 
       void setAlarm1();
       void setAlarm1(uint8_t second);
