@@ -52,16 +52,19 @@ class DS3231 {
       void enableAlarm1();
       void enableAlarm2();
 
+      void disableAlarm1();
+      void disableAlarm2();
+
       void setAlarm1();
       void setAlarm1(uint8_t second);
-      void setAlarm1(uint8_t second, uint8_t minute);
-      void setAlarm1(uint8_t second, uint8_t minute, uint8_t hour);
-      void setAlarm1(uint8_t second, uint8_t minute, uint8_t hour, uint8_t day);
+      void setAlarm1(uint8_t minute, uint8_t second);
+      void setAlarm1(uint8_t hour, uint8_t minute, uint8_t second);
+      void setAlarm1(uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
 
       void setAlarm2();
       void setAlarm2(uint8_t minute);
-      void setAlarm2(uint8_t minute, uint8_t hour);
-      void setAlarm2(uint8_t minute, uint8_t hour, uint8_t day);
+      void setAlarm2(uint8_t hour, uint8_t minute);
+      void setAlarm2(uint8_t day, uint8_t hour, uint8_t minute);
 
       bool isAlarm1Tiggered();
       bool isAlarm2Tiggered();
