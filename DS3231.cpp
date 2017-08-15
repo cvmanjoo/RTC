@@ -7,24 +7,14 @@
 #include <Time.h>
 #include <Wire.h>
 #include "DS3231.h"
-
+ 
 bool DS3231::begin()
 {
-    Wire.begin(); // join i2c bus
-    Wire.beginTransmission (0x68);
-    return (Wire.endTransmission() == 0 ?  true : false);  
+     Wire.begin(); // join i2c bus
+     Wire.beginTransmission (0x68);
+     return (Wire.endTransmission() == 0 ?  true : false);  
 }
 
-/*----------------------------------------------------------------------------------------------
-getSecond
-
-+---------+--------+-------+-------+-------+-------+-------+-------+--------+----------+-------+
-| ADDRESS | BIT 7  | BIT 6 | BIT 5 | BIT 4 | BIT 3 | BIT 2 | BIT 1 | BIT 0  | FUNCTION | RANGE |
-+---------+--------+-------+-------+-------+-------+-------+-------+--------+----------+-------+
-|   0x00  |    0   |       10 Seconds      |             Seconds            |  Seconds | 00-59 |
-+---------+--------+-----------------------+--------------------------------+----------+-------+
-
-----------------------------------------------------------------------------------------------*/
 uint8_t DS3231::getSecond()
 {
     uint8_t second;
@@ -38,15 +28,15 @@ uint8_t DS3231::getSecond()
 
 void DS3231::setSecond(uint8_t second)
 {
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x00);  // Second Register
-    Wire.write(bin2bcd(second));
-    Wire.endTransmission();
-}
-
-/*-----------------------------------------------------------
-getMinute
------------------------------------------------------------*/
+     Wire.beginTransmission(DS3231_ADDR);                       
+     Wire.write(0x00);  // Second Register
+     Wire.write(bin2bcd(second));
+     Wire.endTransmission();
+ }
+ 
+ /*-----------------------------------------------------------
+ getMinute
+ -----------------------------------------------------------*/
 uint8_t DS3231::getMinute()
 {
     uint8_t minute;
@@ -148,8 +138,7 @@ uint8_t DS3231::getMonth()
     
     bitWrite(month,7,0); 
 
-    month = bcd2bin(month);
-    return (month);
+    return (bcd2bin(month););
 }
 /*-----------------------------------------------------------
 setMonth (Perfect)
@@ -184,7 +173,7 @@ uint16_t DS3231::getYear()
     uint8_t c_data ,century, data;
     uint16_t year;
 
-     /* Setting Century Bit*/
+    /* Setting Century Bit*/
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x05);  // Month Register to read Century
     Wire.endTransmission();
@@ -317,7 +306,6 @@ void DS3231::setDate(uint8_t day, uint8_t month, uint16_t year)
 }
 /*-----------------------------------------------------------
 setDateTime()
-
 Taken from https://github.com/adafruit/RTClib/
 -----------------------------------------------------------*/
 
@@ -325,7 +313,7 @@ void DS3231::setDateTime(char* date, char* time)
 {
     uint8_t day, month, hour, minute, second;
     uint16_t year;
- // sample input: date = "Dec 26 2009", time = "12:34:56"
+// sample input: date = "Dec 26 2009", time = "12:34:56"
     year = atoi(date + 9);
     
     // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec 
@@ -356,16 +344,16 @@ setEpoch()
 
 void DS3231::setEpoch(time_t epoch, time_t e_year, int16_t offset)
 {
-	time_t rawtime;
-	struct tm epoch_tm , *ptr_epoch_tm;
+    time_t rawtime;
+    struct tm epoch_tm , *ptr_epoch_tm;
     uint16_t year;
 
     epoch  = epoch - e_year;
 
-	rawtime = epoch;
-	ptr_epoch_tm = gmtime(&rawtime);	
-	epoch_tm = *ptr_epoch_tm; 
-	
+    rawtime = epoch;
+    ptr_epoch_tm = gmtime(&rawtime);	
+    epoch_tm = *ptr_epoch_tm; 
+    
     setSecond(epoch_tm.tm_sec); //0x00 - Seconds
     setMinute(epoch_tm.tm_min);
     setHour(epoch_tm.tm_hour);
@@ -374,28 +362,6 @@ void DS3231::setEpoch(time_t epoch, time_t e_year, int16_t offset)
     setMonth(epoch_tm.tm_mon+1);
     setYear(epoch_tm.tm_year+1900);
 
-	  /*  //For Debug 
-        Serial.println();
-        Serial.print("tm_sec : ");
-        Serial.println(epoch_tm.tm_sec);
-        Serial.print("tm_min : ");
-        Serial.println(epoch_tm.tm_min);
-        Serial.print("tm_hour : ");
-        Serial.println(epoch_tm.tm_hour);
-        Serial.print("tm_mday : ");
-        Serial.println(epoch_tm.tm_mday);
-        Serial.print("tm_mon : ");
-        Serial.println(epoch_tm.tm_mon);
-        Serial.print("tm_year : ");
-        Serial.println(epoch_tm.tm_year);
-        Serial.print("tm_wday : ");
-        Serial.println(epoch_tm.tm_wday);
-        Serial.print("tm_yday : ");
-        Serial.println(epoch_tm.tm_yday);
-        Serial.print("tm_isdst : ");
-        Serial.println(epoch_tm.tm_isdst);
-        Serial.println();
-    */
     Wire.endTransmission();
 }
 
@@ -405,8 +371,8 @@ getEpoch()
 time_t DS3231::getEpoch()
 {
     time_t epoch;
-	struct tm epoch_tm;
-	
+    struct tm epoch_tm;
+    
     epoch_tm.tm_sec = getSecond();
     epoch_tm.tm_min = getMinute();
     epoch_tm.tm_hour = getHour();
@@ -461,7 +427,7 @@ void DS3231::enableAlarm1()
     Wire.endTransmission();
     Wire.requestFrom(DS3231_ADDR, 1);
     data = Wire.read();
-    bitWrite(data,0,0);             // Write  A1F Register to 1 to enable Alarm 1 
+    bitWrite(data,0,0);             // Write  A1F Register to 0 to clear Alaram 1 flag 
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x0F);               // Control Register (0Fh)
     Wire.write(bin2bcd(data));
@@ -488,12 +454,67 @@ void DS3231::enableAlarm2()
     Wire.endTransmission();
     Wire.requestFrom(DS3231_ADDR, 1);
     data = Wire.read();
-    bitWrite(data,1,0);             // Write  A2F Register to 1 to enable Alarm 2
+    bitWrite(data,1,0);             // Write  A2F Register to 0 to clear Alaram 2 flag 
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x0F);               // Control Register (0Fh)
     Wire.write(bin2bcd(data));
     Wire.endTransmission();
 }
+
+void DS3231::disableAlarm1()
+{
+    uint8_t data;
+    
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x0E);               // Control Register (0Eh)
+    Wire.endTransmission();
+    Wire.requestFrom(DS3231_ADDR, 1);
+    data = Wire.read();
+    bitWrite(data,0,0);             // Write  A1IE Register to 0 to disable Alarm 1 
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x0E);               // Control Register (0Eh)
+    Wire.write(bin2bcd(data));
+    Wire.endTransmission();
+
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x0F);               // Status Register (0Fh)
+    Wire.endTransmission();
+    Wire.requestFrom(DS3231_ADDR, 1);
+    data = Wire.read();
+    bitWrite(data,0,0);             // Write  A1F Register to 0 to clear Alaram 1 flag 
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x0F);               // Control Register (0Fh)
+    Wire.write(bin2bcd(data));
+    Wire.endTransmission();
+}
+
+void DS3231::disableAlarm2()
+{
+    int8_t data;
+    
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x0E);               // Control Register (0Eh)
+    Wire.endTransmission();
+    Wire.requestFrom(DS3231_ADDR, 1);
+    data = Wire.read();
+    bitWrite(data,1,0);             // Write  A1IE Register to 0 to disable Alarm 2 
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x0E);               // Control Register (0Eh)
+    Wire.write(bin2bcd(data));
+    Wire.endTransmission();
+
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x0F);               // Status Register (0Fh)
+    Wire.endTransmission();
+    Wire.requestFrom(DS3231_ADDR, 1);
+    data = Wire.read();
+    bitWrite(data,1,0);             // Write  A1F Register to 0 to clear Alaram 2 flag 
+    Wire.beginTransmission(DS3231_ADDR);                       
+    Wire.write(0x0F);               // Control Register (0Fh)
+    Wire.write(bin2bcd(data));
+    Wire.endTransmission();
+}
+
 
 /*-----------------------------------------------------------
 setAlarm1() *Incomplete*
@@ -510,8 +531,6 @@ void DS3231::setAlarm1()
     Wire.endTransmission();
 }
 
-
-
 void DS3231::setAlarm1(uint8_t second)
 {
     enableAlarm1();
@@ -525,7 +544,7 @@ void DS3231::setAlarm1(uint8_t second)
     Wire.endTransmission();
 }
 
-void DS3231::setAlarm1(uint8_t second, uint8_t minute)
+void DS3231::setAlarm1(uint8_t minute, uint8_t second)
 {
     enableAlarm1();
 
@@ -538,7 +557,7 @@ void DS3231::setAlarm1(uint8_t second, uint8_t minute)
     Wire.endTransmission();
 }
 
-void DS3231::setAlarm1(uint8_t second, uint8_t minute, uint8_t hour)
+void DS3231::setAlarm1( uint8_t hour, uint8_t minute, uint8_t second)
 {
     enableAlarm1();
 
@@ -551,7 +570,7 @@ void DS3231::setAlarm1(uint8_t second, uint8_t minute, uint8_t hour)
     Wire.endTransmission();
 }
 
-void DS3231::setAlarm1(uint8_t second, uint8_t minute, uint8_t hour, uint8_t day)
+void DS3231::setAlarm1(uint8_t day, uint8_t hour, uint8_t minute, uint8_t second)
 {
     enableAlarm1();
 
@@ -569,7 +588,7 @@ void DS3231::setAlarm1(uint8_t second, uint8_t minute, uint8_t hour, uint8_t day
 void DS3231::setAlarm2()
 {
     enableAlarm2();
-    
+
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x0B);               
     Wire.write(0x80);    // 0x0B Alarm2 Minute
@@ -590,7 +609,7 @@ void DS3231::setAlarm2(uint8_t minute)
     Wire.endTransmission();
 }
 
-void DS3231::setAlarm2(uint8_t minute, uint8_t hour)
+void DS3231::setAlarm2(uint8_t hour, uint8_t minute)
 {
     enableAlarm2();
 
@@ -602,10 +621,10 @@ void DS3231::setAlarm2(uint8_t minute, uint8_t hour)
     Wire.endTransmission();
 }
 
-void DS3231::setAlarm2(uint8_t minute, uint8_t hour, uint8_t day)
+void DS3231::setAlarm2(uint8_t day, uint8_t hour, uint8_t minute)
 {
     enableAlarm2();
- 
+
     //Serial.print("CPP:Minute : ");
     //Serial.print(minute,BIN);
     //Serial.println();  
@@ -671,8 +690,8 @@ void DS3231::StartClock(void)
     bitWrite(data,7,0); // Write  EOSC Register to 0 to start the clock. 
 
     Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(0x0F);  // Month Register
-    Wire.write(bin2bcd(data));
+    Wire.write(0x0F);
+    Wire.write(data));
     Wire.endTransmission();
 }
 
@@ -704,23 +723,3 @@ uint8_t DS3231::bin2bcd (uint8_t val)
 { 
     return val + 6 * (val / 10); 
 }
-
-/* Debug Functions
-uint8_t DS3231::getRegister(uint8_t reg)
-{
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(reg);
-    Wire.endTransmission();
-    Wire.requestFrom(DS3231_ADDR, 1);
-    reg = Wire.read();
-    return (reg);
-}
-
-void DS3231::setRegister(uint8_t reg, uint8_t data)
-{
-    Wire.beginTransmission(DS3231_ADDR);                       
-    Wire.write(reg);
-    Wire.write(data);
-    Wire.endTransmission();
-}
-*/

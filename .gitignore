@@ -34,3 +34,7 @@
 # Json Setting Files
 *.json
 
+# Debug Class
+Debug.cpp
+Debug.h
+
