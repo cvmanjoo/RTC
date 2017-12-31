@@ -138,7 +138,11 @@ uint8_t DS3231::getMonth()
     
     bitWrite(month,7,0); 
 
+<<<<<<< HEAD
     return (bcd2bin(month));
+=======
+    return (bcd2bin(month););
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 }
 /*-----------------------------------------------------------
 setMonth (Perfect)
@@ -691,7 +695,11 @@ void DS3231::StartClock(void)
 
     Wire.beginTransmission(DS3231_ADDR);                       
     Wire.write(0x0F);
+<<<<<<< HEAD
     Wire.write(data);
+=======
+    Wire.write(data));
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
     Wire.endTransmission();
 }
 

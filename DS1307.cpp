@@ -6,16 +6,26 @@
 
 #include <Time.h>
 #include <Wire.h>
+<<<<<<< HEAD
 #include <DS1307.h>
 
 bool DS1307::begin()
+=======
+#include "DS1307.h"
+
+bool DS3231::begin()
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     Wire.begin(); // join i2c bus
     Wire.beginTransmission (0x68);
     return (Wire.endTransmission() == 0 ?  true : false);  
 }
 
+<<<<<<< HEAD
 uint8_t DS1307::getSecond()
+=======
+uint8_t DS3231::getSecond()
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     uint8_t second;
     Wire.beginTransmission(DS1307_ADDR);                       
@@ -26,7 +36,11 @@ uint8_t DS1307::getSecond()
     return (bcd2bin(second));
 }
 
+<<<<<<< HEAD
 void DS1307::setSecond(uint8_t second)
+=======
+void DS3231::setSecond(uint8_t second)
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x00);  // Second Register
@@ -37,7 +51,11 @@ void DS1307::setSecond(uint8_t second)
 /*-----------------------------------------------------------
 getMinute
 -----------------------------------------------------------*/
+<<<<<<< HEAD
 uint8_t DS1307::getMinute()
+=======
+uint8_t DS3231::getMinute()
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     uint8_t minute;
     Wire.beginTransmission(DS1307_ADDR);                       
@@ -48,7 +66,11 @@ uint8_t DS1307::getMinute()
     return (bcd2bin(minute));
 }
 
+<<<<<<< HEAD
 void DS1307::setMinute(uint8_t minute)
+=======
+void DS3231::setMinute(uint8_t minute)
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x01);  // Minute Register
@@ -59,7 +81,11 @@ void DS1307::setMinute(uint8_t minute)
 /*-----------------------------------------------------------
 getHour
 -----------------------------------------------------------*/
+<<<<<<< HEAD
 uint8_t DS1307::getHour()
+=======
+uint8_t DS3231::getHour()
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     uint8_t hour;
     Wire.beginTransmission(DS1307_ADDR);                       
@@ -70,7 +96,11 @@ uint8_t DS1307::getHour()
     return (bcd2bin(hour));
 }
 
+<<<<<<< HEAD
 void  DS1307::setHour(uint8_t hour)
+=======
+void  DS3231::setHour(uint8_t hour)
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x02);  // Hour Register
@@ -81,7 +111,11 @@ void  DS1307::setHour(uint8_t hour)
 /*-----------------------------------------------------------
 getWeek
 -----------------------------------------------------------*/
+<<<<<<< HEAD
 uint8_t DS1307::getWeek()
+=======
+uint8_t DS3231::getWeek()
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     uint8_t week;
     Wire.beginTransmission(DS1307_ADDR);                       
@@ -92,7 +126,11 @@ uint8_t DS1307::getWeek()
     return week;
 }
 
+<<<<<<< HEAD
 void DS1307::setWeek(uint8_t week)
+=======
+void DS3231::setWeek(uint8_t week)
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x03);  // Minute Register
@@ -103,7 +141,11 @@ void DS1307::setWeek(uint8_t week)
 /*-----------------------------------------------------------
 getDay
 -----------------------------------------------------------*/      
+<<<<<<< HEAD
 uint8_t DS1307::getDay()
+=======
+uint8_t DS3231::getDay()
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     uint8_t day;
     Wire.beginTransmission(DS1307_ADDR);                       
@@ -114,7 +156,11 @@ uint8_t DS1307::getDay()
     return (bcd2bin(day));
 }
 
+<<<<<<< HEAD
 void DS1307::setDay(uint8_t day)
+=======
+void DS3231::setDay(uint8_t day)
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x04);  // Day Register   
@@ -123,6 +169,7 @@ void DS1307::setDay(uint8_t day)
 }
 
 /*-----------------------------------------------------------
+<<<<<<< HEAD
 getMonth()
 -----------------------------------------------------------*/
 uint8_t DS1307::getMonth()
@@ -144,21 +191,86 @@ void DS1307::setMonth(uint8_t month)
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x05);  // Month Register
     Wire.write(bin2bcd(month));
+=======
+getMonth (Perfect)
+-----------------------------------------------------------*/
+uint8_t DS3231::getMonth()
+{
+    uint8_t month;
+
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x05);  // Month Register
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDR, 1);
+    month = Wire.read();
+    
+    bitWrite(month,7,0); 
+
+    month = bcd2bin(month);
+    return (month);
+}
+/*-----------------------------------------------------------
+setMonth (Perfect)
+-----------------------------------------------------------*/
+
+void DS3231::setMonth(uint8_t month)
+{
+    uint8_t century;
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x05);  // Month Register
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDR, 1);
+    century = Wire.read();
+    
+    century = century & 0x80;
+
+    month = bin2bcd(month);
+    month = century | month;
+    
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x05);  // Month Register
+    Wire.write(month);
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
     Wire.endTransmission();
 }
 
 /*-----------------------------------------------------------
 getYear (Completed)
 -----------------------------------------------------------*/
+<<<<<<< HEAD
 uint16_t DS1307::getYear()
 {
     uint16_t year;
 
+=======
+uint16_t DS3231::getYear()
+{
+    uint8_t c_data ,century, data;
+    uint16_t year;
+
+    /* Setting Century Bit*/
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x05);  // Month Register to read Century
+    Wire.endTransmission();
+    Wire.requestFrom(DS1307_ADDR, 1);
+    c_data = Wire.read();
+
+    century = bitRead(c_data,7);
+
+    if(century==1)
+        year = 2000;
+    else
+        year = 1900;
+
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x06);  // Year Register
     Wire.endTransmission();
 
     Wire.requestFrom(DS1307_ADDR, 1);
+<<<<<<< HEAD
     year = Wire.read();
     return (bcd2bin(year)+2000);
 }
@@ -167,6 +279,39 @@ void DS1307::setYear(uint16_t year)
 {   
     year = year % 100; //Converting to 2 Digit
 
+=======
+    data = Wire.read();
+    year = bcd2bin(data)+year;
+    return (year);
+}
+
+void DS3231::setYear(uint16_t year)
+{
+
+    uint8_t c_data, century;
+    
+    if(year >= 2000)
+        century = 1;
+    else
+        century = 0;
+
+    year = year % 100; //Converting to 2 Digit
+
+    /* Setting Century Bit*/
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x05);  // Month Register to read Century
+    Wire.endTransmission();
+    Wire.requestFrom(DS1307_ADDR, 1);
+    c_data = Wire.read();
+    bitWrite(c_data,7,century);
+    
+    /*Writing Century Bit in Month Register (0x05)*/
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x05);  // Month Register to write Century
+    Wire.write(c_data);
+    Wire.endTransmission();
+
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
     /*Writing 2 Digit year to Year Register(0x06)*/
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x06);  // Year Register to write year   
@@ -178,8 +323,14 @@ void DS1307::setYear(uint16_t year)
 setTime
 -----------------------------------------------------------*/
 
+<<<<<<< HEAD
 void DS1307::setTime(uint8_t hour, uint8_t minute, uint8_t second)
 {
+=======
+void DS3231::setTime(uint8_t hour, uint8_t minute, uint8_t second)
+{
+
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x00);  // Year Register
     Wire.write(bin2bcd(second));
@@ -191,6 +342,7 @@ void DS1307::setTime(uint8_t hour, uint8_t minute, uint8_t second)
 /*-----------------------------------------------------------
 setDate (Should be Optimised)
 -----------------------------------------------------------*/
+<<<<<<< HEAD
 void DS1307::setDate(uint8_t day, uint8_t month, uint16_t year)
 {   
     year = year % 100; //Converting to 2 Digit
@@ -199,6 +351,61 @@ void DS1307::setDate(uint8_t day, uint8_t month, uint16_t year)
     Wire.write(0x04);  // Year Register
     Wire.write(bin2bcd(day));
     Wire.write(bin2bcd(month));
+=======
+void DS3231::setDate(uint8_t day, uint8_t month, uint16_t year)
+{
+    uint8_t c_data, century;
+
+//Setting Day
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x04);  // Year Register
+    Wire.write(bin2bcd(day));
+    Wire.endTransmission();
+
+//Setting Month
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x05);  // Month Register
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDR, 1);
+    century = Wire.read();
+    
+    century = century & 0x80;
+
+    month = bin2bcd(month);
+    month = century | month;
+    
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x05);  // Month Register
+    Wire.write(month);
+    Wire.endTransmission();
+
+//Setting Year
+    if(year >= 2000)
+        century = 1;
+    else
+        century = 0;
+
+    year = year % 100; //Converting to 2 Digit
+
+    /* Setting Century Bit*/
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x05);  // Month Register to read Century
+    Wire.endTransmission();
+    Wire.requestFrom(DS1307_ADDR, 1);
+    c_data = Wire.read();
+    bitWrite(c_data,7,century);
+    
+    /*Writing Century Bit in Month Register (0x05)*/
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x05);  // Month Register to write Century
+    Wire.write(c_data);
+    Wire.endTransmission();
+
+    /*Writing 2 Digit year to Year Register(0x06)*/
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x06);  // Year Register to write year   
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
     Wire.write(bin2bcd(year));
     Wire.endTransmission();
 }
@@ -207,13 +414,21 @@ setDateTime()
 Taken from https://github.com/adafruit/RTClib/
 -----------------------------------------------------------*/
 
+<<<<<<< HEAD
 void DS1307::setDateTime(char* date, char* time)
+=======
+void DS3231::setDateTime(char* date, char* time)
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     uint8_t day, month, hour, minute, second;
     uint16_t year;
 // sample input: date = "Dec 26 2009", time = "12:34:56"
     year = atoi(date + 9);
+<<<<<<< HEAD
     setYear(year);
+=======
+    
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
     // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec 
     switch (date[0]) {
         case 'J': month = (date[1] == 'a') ? 1 : ((date[2] == 'n') ? 6 : 7); break;
@@ -240,7 +455,11 @@ void DS1307::setDateTime(char* date, char* time)
 setEpoch()
 -----------------------------------------------------------*/
 
+<<<<<<< HEAD
 void DS1307::setEpoch(time_t epoch, time_t e_year, int16_t offset)
+=======
+void DS3231::setEpoch(time_t epoch, time_t e_year, int16_t offset)
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     time_t rawtime;
     struct tm epoch_tm , *ptr_epoch_tm;
@@ -260,13 +479,42 @@ void DS1307::setEpoch(time_t epoch, time_t e_year, int16_t offset)
     setMonth(epoch_tm.tm_mon+1);
     setYear(epoch_tm.tm_year+1900);
 
+<<<<<<< HEAD
+=======
+    /*  //For Debug 
+        Serial.println();
+        Serial.print("tm_sec : ");
+        Serial.println(epoch_tm.tm_sec);
+        Serial.print("tm_min : ");
+        Serial.println(epoch_tm.tm_min);
+        Serial.print("tm_hour : ");
+        Serial.println(epoch_tm.tm_hour);
+        Serial.print("tm_mday : ");
+        Serial.println(epoch_tm.tm_mday);
+        Serial.print("tm_mon : ");
+        Serial.println(epoch_tm.tm_mon);
+        Serial.print("tm_year : ");
+        Serial.println(epoch_tm.tm_year);
+        Serial.print("tm_wday : ");
+        Serial.println(epoch_tm.tm_wday);
+        Serial.print("tm_yday : ");
+        Serial.println(epoch_tm.tm_yday);
+        Serial.print("tm_isdst : ");
+        Serial.println(epoch_tm.tm_isdst);
+        Serial.println();
+    */
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
     Wire.endTransmission();
 }
 
 /*-----------------------------------------------------------
 getEpoch()
 -----------------------------------------------------------*/
+<<<<<<< HEAD
 time_t DS1307::getEpoch()
+=======
+time_t DS3231::getEpoch()
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 {
     time_t epoch;
     struct tm epoch_tm;
@@ -282,6 +530,7 @@ time_t DS1307::getEpoch()
     epoch = mktime (&epoch_tm);	
 
     return (epoch);
+<<<<<<< HEAD
 }
 
 bool DS1307::isRunning(void)
@@ -333,4 +582,6 @@ uint8_t DS1307::bcd2bin (uint8_t val)
 uint8_t DS1307::bin2bcd (uint8_t val) 
 { 
     return val + 6 * (val / 10); 
+=======
+>>>>>>> cc296f84ef8a00630c82497f36f027665dff2837
 }
