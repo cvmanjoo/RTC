@@ -6,16 +6,16 @@
 
 #include <Time.h>
 #include <Wire.h>
-#include "DS1307.h"
+#include <DS1307.h>
 
-bool DS3231::begin()
+bool DS1307::begin()
 {
     Wire.begin(); // join i2c bus
     Wire.beginTransmission (0x68);
     return (Wire.endTransmission() == 0 ?  true : false);  
 }
 
-uint8_t DS3231::getSecond()
+uint8_t DS1307::getSecond()
 {
     uint8_t second;
     Wire.beginTransmission(DS1307_ADDR);                       
@@ -26,7 +26,7 @@ uint8_t DS3231::getSecond()
     return (bcd2bin(second));
 }
 
-void DS3231::setSecond(uint8_t second)
+void DS1307::setSecond(uint8_t second)
 {
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x00);  // Second Register
@@ -37,7 +37,7 @@ void DS3231::setSecond(uint8_t second)
 /*-----------------------------------------------------------
 getMinute
 -----------------------------------------------------------*/
-uint8_t DS3231::getMinute()
+uint8_t DS1307::getMinute()
 {
     uint8_t minute;
     Wire.beginTransmission(DS1307_ADDR);                       
@@ -48,7 +48,7 @@ uint8_t DS3231::getMinute()
     return (bcd2bin(minute));
 }
 
-void DS3231::setMinute(uint8_t minute)
+void DS1307::setMinute(uint8_t minute)
 {
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x01);  // Minute Register
@@ -59,7 +59,7 @@ void DS3231::setMinute(uint8_t minute)
 /*-----------------------------------------------------------
 getHour
 -----------------------------------------------------------*/
-uint8_t DS3231::getHour()
+uint8_t DS1307::getHour()
 {
     uint8_t hour;
     Wire.beginTransmission(DS1307_ADDR);                       
@@ -70,7 +70,7 @@ uint8_t DS3231::getHour()
     return (bcd2bin(hour));
 }
 
-void  DS3231::setHour(uint8_t hour)
+void  DS1307::setHour(uint8_t hour)
 {
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x02);  // Hour Register
@@ -81,7 +81,7 @@ void  DS3231::setHour(uint8_t hour)
 /*-----------------------------------------------------------
 getWeek
 -----------------------------------------------------------*/
-uint8_t DS3231::getWeek()
+uint8_t DS1307::getWeek()
 {
     uint8_t week;
     Wire.beginTransmission(DS1307_ADDR);                       
@@ -92,7 +92,7 @@ uint8_t DS3231::getWeek()
     return week;
 }
 
-void DS3231::setWeek(uint8_t week)
+void DS1307::setWeek(uint8_t week)
 {
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x03);  // Minute Register
@@ -103,7 +103,7 @@ void DS3231::setWeek(uint8_t week)
 /*-----------------------------------------------------------
 getDay
 -----------------------------------------------------------*/      
-uint8_t DS3231::getDay()
+uint8_t DS1307::getDay()
 {
     uint8_t day;
     Wire.beginTransmission(DS1307_ADDR);                       
@@ -114,7 +114,7 @@ uint8_t DS3231::getDay()
     return (bcd2bin(day));
 }
 
-void DS3231::setDay(uint8_t day)
+void DS1307::setDay(uint8_t day)
 {
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x04);  // Day Register   
@@ -123,106 +123,49 @@ void DS3231::setDay(uint8_t day)
 }
 
 /*-----------------------------------------------------------
-getMonth (Perfect)
+getMonth()
 -----------------------------------------------------------*/
-uint8_t DS3231::getMonth()
+uint8_t DS1307::getMonth()
 {
     uint8_t month;
-
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x05);  // Month Register
     Wire.endTransmission();
-
     Wire.requestFrom(DS1307_ADDR, 1);
     month = Wire.read();
-    
-    bitWrite(month,7,0); 
-
-    month = bcd2bin(month);
-    return (month);
+    return (bcd2bin(month));
 }
 /*-----------------------------------------------------------
-setMonth (Perfect)
+setMonth()
 -----------------------------------------------------------*/
 
-void DS3231::setMonth(uint8_t month)
+void DS1307::setMonth(uint8_t month)
 {
-    uint8_t century;
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x05);  // Month Register
-    Wire.endTransmission();
-
-    Wire.requestFrom(DS1307_ADDR, 1);
-    century = Wire.read();
-    
-    century = century & 0x80;
-
-    month = bin2bcd(month);
-    month = century | month;
-    
-    Wire.beginTransmission(DS1307_ADDR);                       
-    Wire.write(0x05);  // Month Register
-    Wire.write(month);
+    Wire.write(bin2bcd(month));
     Wire.endTransmission();
 }
 
 /*-----------------------------------------------------------
 getYear (Completed)
 -----------------------------------------------------------*/
-uint16_t DS3231::getYear()
+uint16_t DS1307::getYear()
 {
-    uint8_t c_data ,century, data;
     uint16_t year;
-
-    /* Setting Century Bit*/
-    Wire.beginTransmission(DS1307_ADDR);                       
-    Wire.write(0x05);  // Month Register to read Century
-    Wire.endTransmission();
-    Wire.requestFrom(DS1307_ADDR, 1);
-    c_data = Wire.read();
-
-    century = bitRead(c_data,7);
-
-    if(century==1)
-        year = 2000;
-    else
-        year = 1900;
 
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x06);  // Year Register
     Wire.endTransmission();
 
     Wire.requestFrom(DS1307_ADDR, 1);
-    data = Wire.read();
-    year = bcd2bin(data)+year;
-    return (year);
+    year = Wire.read();
+    return (bcd2bin(year)+2000);
 }
 
-void DS3231::setYear(uint16_t year)
-{
-
-    uint8_t c_data, century;
-    
-    if(year >= 2000)
-        century = 1;
-    else
-        century = 0;
-
+void DS1307::setYear(uint16_t year)
+{   
     year = year % 100; //Converting to 2 Digit
-
-    /* Setting Century Bit*/
-    Wire.beginTransmission(DS1307_ADDR);                       
-    Wire.write(0x05);  // Month Register to read Century
-    Wire.endTransmission();
-    Wire.requestFrom(DS1307_ADDR, 1);
-    c_data = Wire.read();
-    bitWrite(c_data,7,century);
-    
-    /*Writing Century Bit in Month Register (0x05)*/
-    Wire.beginTransmission(DS1307_ADDR);                       
-    Wire.write(0x05);  // Month Register to write Century
-    Wire.write(c_data);
-    Wire.endTransmission();
 
     /*Writing 2 Digit year to Year Register(0x06)*/
     Wire.beginTransmission(DS1307_ADDR);                       
@@ -235,9 +178,8 @@ void DS3231::setYear(uint16_t year)
 setTime
 -----------------------------------------------------------*/
 
-void DS3231::setTime(uint8_t hour, uint8_t minute, uint8_t second)
+void DS1307::setTime(uint8_t hour, uint8_t minute, uint8_t second)
 {
-
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x00);  // Year Register
     Wire.write(bin2bcd(second));
@@ -249,59 +191,14 @@ void DS3231::setTime(uint8_t hour, uint8_t minute, uint8_t second)
 /*-----------------------------------------------------------
 setDate (Should be Optimised)
 -----------------------------------------------------------*/
-void DS3231::setDate(uint8_t day, uint8_t month, uint16_t year)
-{
-    uint8_t c_data, century;
+void DS1307::setDate(uint8_t day, uint8_t month, uint16_t year)
+{   
+    year = year % 100; //Converting to 2 Digit
 
-//Setting Day
     Wire.beginTransmission(DS1307_ADDR);                       
     Wire.write(0x04);  // Year Register
     Wire.write(bin2bcd(day));
-    Wire.endTransmission();
-
-//Setting Month
-    Wire.beginTransmission(DS1307_ADDR);                       
-    Wire.write(0x05);  // Month Register
-    Wire.endTransmission();
-
-    Wire.requestFrom(DS1307_ADDR, 1);
-    century = Wire.read();
-    
-    century = century & 0x80;
-
-    month = bin2bcd(month);
-    month = century | month;
-    
-    Wire.beginTransmission(DS1307_ADDR);                       
-    Wire.write(0x05);  // Month Register
-    Wire.write(month);
-    Wire.endTransmission();
-
-//Setting Year
-    if(year >= 2000)
-        century = 1;
-    else
-        century = 0;
-
-    year = year % 100; //Converting to 2 Digit
-
-    /* Setting Century Bit*/
-    Wire.beginTransmission(DS1307_ADDR);                       
-    Wire.write(0x05);  // Month Register to read Century
-    Wire.endTransmission();
-    Wire.requestFrom(DS1307_ADDR, 1);
-    c_data = Wire.read();
-    bitWrite(c_data,7,century);
-    
-    /*Writing Century Bit in Month Register (0x05)*/
-    Wire.beginTransmission(DS1307_ADDR);                       
-    Wire.write(0x05);  // Month Register to write Century
-    Wire.write(c_data);
-    Wire.endTransmission();
-
-    /*Writing 2 Digit year to Year Register(0x06)*/
-    Wire.beginTransmission(DS1307_ADDR);                       
-    Wire.write(0x06);  // Year Register to write year   
+    Wire.write(bin2bcd(month));
     Wire.write(bin2bcd(year));
     Wire.endTransmission();
 }
@@ -310,13 +207,13 @@ setDateTime()
 Taken from https://github.com/adafruit/RTClib/
 -----------------------------------------------------------*/
 
-void DS3231::setDateTime(char* date, char* time)
+void DS1307::setDateTime(char* date, char* time)
 {
     uint8_t day, month, hour, minute, second;
     uint16_t year;
 // sample input: date = "Dec 26 2009", time = "12:34:56"
     year = atoi(date + 9);
-    
+    setYear(year);
     // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec 
     switch (date[0]) {
         case 'J': month = (date[1] == 'a') ? 1 : ((date[2] == 'n') ? 6 : 7); break;
@@ -343,7 +240,7 @@ void DS3231::setDateTime(char* date, char* time)
 setEpoch()
 -----------------------------------------------------------*/
 
-void DS3231::setEpoch(time_t epoch, time_t e_year, int16_t offset)
+void DS1307::setEpoch(time_t epoch, time_t e_year, int16_t offset)
 {
     time_t rawtime;
     struct tm epoch_tm , *ptr_epoch_tm;
@@ -363,35 +260,13 @@ void DS3231::setEpoch(time_t epoch, time_t e_year, int16_t offset)
     setMonth(epoch_tm.tm_mon+1);
     setYear(epoch_tm.tm_year+1900);
 
-    /*  //For Debug 
-        Serial.println();
-        Serial.print("tm_sec : ");
-        Serial.println(epoch_tm.tm_sec);
-        Serial.print("tm_min : ");
-        Serial.println(epoch_tm.tm_min);
-        Serial.print("tm_hour : ");
-        Serial.println(epoch_tm.tm_hour);
-        Serial.print("tm_mday : ");
-        Serial.println(epoch_tm.tm_mday);
-        Serial.print("tm_mon : ");
-        Serial.println(epoch_tm.tm_mon);
-        Serial.print("tm_year : ");
-        Serial.println(epoch_tm.tm_year);
-        Serial.print("tm_wday : ");
-        Serial.println(epoch_tm.tm_wday);
-        Serial.print("tm_yday : ");
-        Serial.println(epoch_tm.tm_yday);
-        Serial.print("tm_isdst : ");
-        Serial.println(epoch_tm.tm_isdst);
-        Serial.println();
-    */
     Wire.endTransmission();
 }
 
 /*-----------------------------------------------------------
 getEpoch()
 -----------------------------------------------------------*/
-time_t DS3231::getEpoch()
+time_t DS1307::getEpoch()
 {
     time_t epoch;
     struct tm epoch_tm;
@@ -407,4 +282,55 @@ time_t DS3231::getEpoch()
     epoch = mktime (&epoch_tm);	
 
     return (epoch);
+}
+
+bool DS1307::isRunning(void)
+{
+    uint8_t data;
+    bool flag;
+
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x00); 
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDR, 1);
+    data = Wire.read();
+
+   flag = bitRead(data,7);
+
+    return (!flag);
+}
+
+void DS1307::startClock(void)
+{
+    uint8_t data;
+    bool flag;
+
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x00);
+    Wire.write(0x00);
+    Wire.endTransmission();
+}
+
+void DS1307::stopClock(void)
+{
+    uint8_t data;
+    bool flag;
+
+    Wire.beginTransmission(DS1307_ADDR);                       
+    Wire.write(0x00);
+    Wire.write(0x80);
+    Wire.endTransmission();
+}
+
+
+/* Helpers */
+
+uint8_t DS1307::bcd2bin (uint8_t val) 
+{ 
+    return val - 6 * (val >> 4); 
+}
+uint8_t DS1307::bin2bcd (uint8_t val) 
+{ 
+    return val + 6 * (val / 10); 
 }

@@ -7,7 +7,7 @@
 
 #define DS1307_ADDR 0x68
 
-#define TIME_H12 0 
+#define TIME_H12 0
 #define TIME_H24 1
 
 class DS1307
@@ -31,6 +31,10 @@ class DS1307
 
         void setDateTime(char* date, char* time);
 
+        bool isRunning(void);
+        void startClock();
+        void stopClock();
+
         uint16_t getYear();
         uint8_t getMonth();
         uint8_t getDay();
@@ -50,14 +54,15 @@ class DS1307
 class NVRAM
 {
     public:
-        
-
+        uint8_t read(uint16_t address);
+        void write(uint16_t address, uint8_t value);
     private:
-        
 };
+
 
 //Instantiate class DS1307 as RTC
 
 static DS1307 RTC;
+static NVRAM NVRAM;
 
 #endif /* DS1307_H */

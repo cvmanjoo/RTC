@@ -1,5 +1,5 @@
 #include <Wire.h>
-#include <DS3231.h>
+#include <DS1307.h>
 
 float temp;
 
@@ -10,25 +10,22 @@ void setup()
 
     Serial.println();
 
-    temp = RTC.getTemp();
+  /*  temp = RTC.getTemp();
     Serial.print("RTC Temperature : ");
     Serial.println(temp);
-
-    Serial.print("Lost Power : ");
-    if (RTC.lostPower())
+*/
+    Serial.print("Is Clock Running : ");
+    if (RTC.isRunning())
     {
         Serial.println("Yes");
-        RTC.setDate(12,8,2017);
-        RTC.setTime(20,35,00);
-        RTC.StartClock();
     }
     else
-        Serial.println("No");   
+        Serial.println("No");
 }
 
 void loop()
 {
-    Serial.print(RTC.getDay());
+/*    Serial.print(RTC.getDay());
     Serial.print("-");
     Serial.print(RTC.getMonth());
     Serial.print("-");
@@ -44,4 +41,5 @@ void loop()
     Serial.println(" ");
 
     delay(1000);
+    */
 }

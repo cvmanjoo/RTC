@@ -6,5 +6,3 @@
 * Full support for accessing all the features of RTC DS3231.
 * Providing [Documentation](../wiki/Home) for all the functions and objects.
 * Custom DateTime Class for custom Date & Time Operations.
-
-## References
