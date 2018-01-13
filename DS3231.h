@@ -7,13 +7,13 @@
 #ifndef DS3231_H
 #define DS3231_H
 
-#include <Time.h>
+#include <time.h>
 #include <Arduino.h>
 #include <Wire.h>
 
 #define DS3231_ADDR 0x68
 
-#define TIME_H12 0 
+#define TIME_H12 0
 #define TIME_H24 1
 
 class DS3231 {

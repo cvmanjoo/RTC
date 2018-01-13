@@ -1,7 +1,7 @@
 #ifndef DS1307_H
 #define DS1307_H
 
-#include <Time.h>
+#include <time.h>
 #include <Arduino.h>
 #include <Wire.h>
 
@@ -9,6 +9,11 @@
 
 #define TIME_H12 0
 #define TIME_H24 1
+
+#define SQW001Hz 10
+#define SQW04kHz 14
+#define SQW08kHz 18
+#define SQW32kHz 32
 
 class DS1307
 {
@@ -24,16 +29,14 @@ class DS1307
 
         void setWeek(uint8_t week);
 
+        void setEpoch(time_t epoch, time_t e_year, int16_t offset);
+
         void setDate(uint8_t day, uint8_t month, uint16_t year);
         void setTime(uint8_t hour, uint8_t minute, uint8_t second);
 
-        void setEpoch(time_t epoch, time_t e_year, int16_t offset);
 
         void setDateTime(char* date, char* time);
 
-        bool isRunning(void);
-        void startClock();
-        void stopClock();
 
         uint16_t getYear();
         uint8_t getMonth();
@@ -45,6 +48,12 @@ class DS1307
         uint8_t getWeek();
 
         time_t getEpoch();
+
+        bool isRunning(void);
+        void startClock();
+        void stopClock();
+
+        void outPin(uint8_t mode);
 
     private:
         uint8_t bin2bcd (uint8_t val);
