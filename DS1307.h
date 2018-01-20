@@ -7,8 +7,11 @@
 
 #define DS1307_ADDR 0x68
 
-#define TIME_H12 0
-#define TIME_H24 1
+#define CLOCK_H24 0
+#define CLOCK_H12 1
+
+#define HOUR_AM 0
+#define HOUR_PM 1
 
 #define SQW001Hz 10
 #define SQW04kHz 14
@@ -46,6 +49,7 @@ class DS1307
         uint8_t getHour();
 
         uint8_t getWeek();
+        uint8_t getMeridiem();
 
         time_t getEpoch();
 

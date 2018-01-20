@@ -19,16 +19,34 @@ bool DS1307::begin()
 uint8_t DS1307::getSecond()
 {
     uint8_t second;
+
     Wire.beginTransmission(DS1307_ADDR);
-    Wire.write(0x00);  // Second Register
+    Wire.write(0x00);
     Wire.endTransmission();
+
     Wire.requestFrom(DS1307_ADDR, 1);
     second = Wire.read();
+
+    bitClear(second,7); // Clearing CH Bit if Set.
+
     return (bcd2bin(second));
+
 }
 
 void DS1307::setSecond(uint8_t second)
 {
+    uint8_t ch_bit;
+    Wire.beginTransmission(DS1307_ADDR);
+    Wire.write(0x00);  // Second Register
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDR, 1);
+    ch_bit = Wire.read();
+
+    ch_bit = ch_bit & 0x80 ;
+
+    second = ch_bit | second;
+
     Wire.beginTransmission(DS1307_ADDR);
     Wire.write(0x00);  // Second Register
     Wire.write(bin2bcd(second));
@@ -63,12 +81,25 @@ getHour
 uint8_t DS1307::getHour()
 {
     uint8_t hour;
+    bool flag;
+
     Wire.beginTransmission(DS1307_ADDR);
     Wire.write(0x02);  // Hour Register
     Wire.endTransmission();
     Wire.requestFrom(DS1307_ADDR, 1);
     hour = Wire.read();
-    return (bcd2bin(hour));
+/*
+    if(bitRead(hour,6) == TIME_H24)
+    {
+      bitClear(hour,5);
+      return (bcd2bin(hour));
+    }
+    else if (bitRead(hour,6) == TIME_H12)
+    {
+      bitClear(hour,5);
+*/
+      return (bcd2bin(hour));
+
 }
 
 void  DS1307::setHour(uint8_t hour)
@@ -78,7 +109,25 @@ void  DS1307::setHour(uint8_t hour)
     Wire.write(bin2bcd(hour));
     Wire.endTransmission();
 }
+/*  To Do
+void  DS1307::set12Hour(uint8_t hour, uint8_t meridiem)
+{
+    Wire.beginTransmission(DS1307_ADDR);
+    Wire.write(0x02);  // Hour Register
 
+    hour = bin2bcd(hour);
+    if(meridiem == TIME_H24)
+    {
+      Wire.write(hour);
+    }
+    else if(meridiem == TIME_H12)
+    {
+      bitSet(hour,6);
+      Wire.write(hour);
+    }
+    Wire.endTransmission();
+}
+*/
 /*-----------------------------------------------------------
 getWeek
 -----------------------------------------------------------*/
@@ -305,35 +354,39 @@ bool DS1307::isRunning(void)
 void DS1307::startClock(void)
 {
     uint8_t data;
-    bool flag;
 
     Wire.beginTransmission(DS1307_ADDR);
     Wire.write(0x00);
-    Wire.write(0x00);
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDR, 1);
+    data = Wire.read();
+
+    bitClear(data, 7);
+
+    Wire.beginTransmission(DS1307_ADDR);
+    Wire.write(0x00);  // Seconds Register
+    Wire.write(data);
     Wire.endTransmission();
 }
 
 void DS1307::stopClock(void)
 {
-    uint8_t data;
-    bool flag;
+  uint8_t data;
 
-    Wire.beginTransmission(DS1307_ADDR);
-    Wire.write(0x00);
-    Wire.write(0x80);
-    Wire.endTransmission();
-}
+  Wire.beginTransmission(DS1307_ADDR);
+  Wire.write(0x00);
+  Wire.endTransmission();
 
+  Wire.requestFrom(DS1307_ADDR, 1);
+  data = Wire.read();
 
-/* Helpers */
+  bitSet(data, 7);
 
-uint8_t DS1307::bcd2bin (uint8_t val)
-{
-    return val - 6 * (val >> 4);
-}
-uint8_t DS1307::bin2bcd (uint8_t val)
-{
-    return val + 6 * (val / 10);
+  Wire.beginTransmission(DS1307_ADDR);
+  Wire.write(0x00);  // Seconds Register
+  Wire.write(data);
+  Wire.endTransmission();
 }
 
 /* NVRAM Functions */
@@ -368,6 +421,7 @@ void NVRAM::write(uint8_t address, uint8_t data)
     Wire.endTransmission();
 }
 
+/* SQW/OUT pin functions */
 
 void DS1307::outPin(uint8_t mode)
 {
@@ -394,4 +448,15 @@ void DS1307::outPin(uint8_t mode)
         break;
     }
     Wire.endTransmission();
+}
+
+/* Helpers */
+
+uint8_t DS1307::bcd2bin (uint8_t val)
+{
+    return val - 6 * (val >> 4);
+}
+uint8_t DS1307::bin2bcd (uint8_t val)
+{
+    return val + 6 * (val / 10);
 }
