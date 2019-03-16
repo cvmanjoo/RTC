@@ -23,6 +23,12 @@ class DS1307
     public:
         bool begin();
 
+        void setHourMode(uint8_t h_mode);
+        uint8_t getHourMode(); 
+
+        void setMeridiem(uint8_t h_mode);
+        uint8_t getMeridiem();  
+
         void setSecond(uint8_t second);
         void setMinute(uint8_t minute);
         void setHour(uint8_t hour);
@@ -49,7 +55,7 @@ class DS1307
         uint8_t getHour();
 
         uint8_t getWeek();
-        uint8_t getMeridiem();
+        
 
         time_t getEpoch();
 

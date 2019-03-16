@@ -7,20 +7,22 @@ void setup()
 {
     Serial.begin(9600);
     RTC.begin();
+    RTC.setHourMode(CLOCK_H12);
 
     Serial.println();
 
-  /*  temp = RTC.getTemp();
-    Serial.print("RTC Temperature : ");
-    Serial.println(temp);
-*/
     Serial.print("Is Clock Running : ");
     if (RTC.isRunning())
-    {
-        Serial.println("Yes");
-    }
+            Serial.println("Yes");
     else
         Serial.println("No");
+
+    
+    Serial.print("Hour Mode : ");
+    if (RTC.getHourMode() == CLOCK_H24)
+        Serial.println("24 Hours");
+    else
+        Serial.println("12 Hours");
 }
 
 void loop()

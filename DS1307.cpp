@@ -16,6 +16,90 @@ bool DS1307::begin()
     return (Wire.endTransmission() == 0 ?  true : false);
 }
 
+/*-----------------------------------------------------------
+get & set HourMode
+-----------------------------------------------------------*/
+
+void DS1307::setHourMode(uint8_t h_mode)
+{
+    uint8_t data;
+
+    Wire.beginTransmission(DS1307_ADDR);
+    Wire.write(0x02);  // Hour Register
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDR, 1);
+    data = Wire.read();
+
+    bitWrite(data, 6, h_mode);
+
+    Wire.beginTransmission(DS1307_ADDR);
+    Wire.write(0x02);  // Hour Register
+    Wire.write(data);
+    Wire.endTransmission();
+}
+
+uint8_t DS1307::getHourMode()
+{
+    bool flag;
+    uint8_t data;
+    Wire.beginTransmission(DS1307_ADDR);
+    Wire.write(0x02);
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDR, 1);
+    data = Wire.read();
+
+    flag = bitRead(data,6);
+
+    return (flag);
+}
+
+/*-----------------------------------------------------------
+get & set HourMode
+
+  void 
+        
+-----------------------------------------------------------*/
+
+void DS1307::setMeridiem(uint8_t meridiem)
+{
+    uint8_t data;
+
+    Wire.beginTransmission(DS1307_ADDR);
+    Wire.write(0x02);  // Hour Register
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDR, 1);
+    data = Wire.read();
+
+    bitWrite(data, 5, meridiem);
+
+    Wire.beginTransmission(DS1307_ADDR);
+    Wire.write(0x02);  // Hour Register
+    Wire.write(data);
+    Wire.endTransmission();
+}
+
+uint8_t DS1307::getMeridiem()
+{
+    bool flag;
+    uint8_t data;
+    Wire.beginTransmission(DS1307_ADDR);
+    Wire.write(0x02);
+    Wire.endTransmission();
+
+    Wire.requestFrom(DS1307_ADDR, 1);
+    data = Wire.read();
+
+    flag = bitRead(data,5);
+
+    return (flag);
+}
+
+/*-----------------------------------------------------------
+get & set Second
+-----------------------------------------------------------*/
 uint8_t DS1307::getSecond()
 {
     uint8_t second;
@@ -88,46 +172,47 @@ uint8_t DS1307::getHour()
     Wire.endTransmission();
     Wire.requestFrom(DS1307_ADDR, 1);
     hour = Wire.read();
-/*
-    if(bitRead(hour,6) == TIME_H24)
-    {
-      bitClear(hour,5);
-      return (bcd2bin(hour));
-    }
-    else if (bitRead(hour,6) == TIME_H12)
-    {
-      bitClear(hour,5);
-*/
-      return (bcd2bin(hour));
+     if (RTC.getHourMode() == CLOCK_H24)
+     {
+        return (bcd2bin(hour));  
+     }
 
+    
+    if (RTC.getHourMode() == CLOCK_H12)
+    {
+        //Serial.print("24: Get Hour() ");
+        //Serial.println(hour,BIN);
+        
+         bitClear(hour,5);
+    
+        return (bcd2bin(hour));
+    }
 }
 
 void  DS1307::setHour(uint8_t hour)
 {
     Wire.beginTransmission(DS1307_ADDR);
     Wire.write(0x02);  // Hour Register
-    Wire.write(bin2bcd(hour));
-    Wire.endTransmission();
-}
-/*  To Do
-void  DS1307::set12Hour(uint8_t hour, uint8_t meridiem)
-{
-    Wire.beginTransmission(DS1307_ADDR);
-    Wire.write(0x02);  // Hour Register
+    
+    if(RTC.getHourMode() == CLOCK_H24)
+    {   
+        //Serial.println(hour);
+       
+        //Serial.print("24: Set Hour() ");
+        //Serial.println(hour,BIN);
+    }
+/*
+    if (RTC.getHourMode() == CLOCK_H12)
+    {
+        hour = bin2bcd(hour);
+        bitWrite(hour,5,RTC.getMeridiem());    
+     }
+     */  
 
-    hour = bin2bcd(hour);
-    if(meridiem == TIME_H24)
-    {
-      Wire.write(hour);
-    }
-    else if(meridiem == TIME_H12)
-    {
-      bitSet(hour,6);
-      Wire.write(hour);
-    }
+     Wire.write(bin2bcd(hour));
     Wire.endTransmission();
 }
-*/
+
 /*-----------------------------------------------------------
 getWeek
 -----------------------------------------------------------*/
