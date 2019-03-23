@@ -1,5 +1,6 @@
 #include <Wire.h>
-#include <DS1307.h>
+#include <DS3231.h>
+
 
 float temp;
 
@@ -10,10 +11,10 @@ void setup()
 
     Serial.println();
 
-  /*  temp = RTC.getTemp();
+	temp = RTC.getTemp();
     Serial.print("RTC Temperature : ");
     Serial.println(temp);
-*/
+	
     Serial.print("Is Clock Running : ");
     if (RTC.isRunning())
     {

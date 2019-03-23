@@ -36,6 +36,16 @@ getWeek	KEYWORD2
 
 enableAlaram	KEYWORD2
 
+setAlarmHours	KEYWORD2
+setAlarmMinutes	KEYWORD2
+setAlarmTime	KEYWORD2
+setAlarmDay	KEYWORD2
+
+getAlarmHours	KEYWORD2
+getAlarmMinutes	KEYWORD2
+AlarmTime	KEYWORD2
+getAlarmDay	KEYWORD2
+
 lostPower	KEYWORD2
 StartClock	KEYWORD2
 getTemp	KEYWORD2
