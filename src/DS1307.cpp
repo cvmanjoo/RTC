@@ -96,7 +96,7 @@ void DS1307::setHourMode(uint8_t h_mode)
 
 uint8_t DS1307::getHourMode()
 {
-    bool flag;
+    bool h_mode;
     uint8_t data;
     Wire.beginTransmission(DS1307_ADDR);
     Wire.write(0x02);
@@ -105,9 +105,9 @@ uint8_t DS1307::getHourMode()
     Wire.requestFrom(DS1307_ADDR, 1);
     data = Wire.read();
 
-    flag = bitRead(data,6);
+    h_mode = bitRead(data,6);
 
-    return (flag);
+    return (h_mode);
 }
 
 /*-----------------------------------------------------------
@@ -121,41 +121,48 @@ void DS1307::setMeridiem(uint8_t meridiem)
 {
     uint8_t data;
 
-    Wire.beginTransmission(DS1307_ADDR);
-    Wire.write(0x02);  // Hour Register
-    Wire.endTransmission();
+    if (RTC.getHourMode() == CLOCK_H12)
+    {
+        Wire.beginTransmission(DS1307_ADDR);
+        Wire.write(0x02);  // Hour Register
+        Wire.endTransmission();
 
-    Wire.requestFrom(DS1307_ADDR, 1);
-    data = Wire.read();
+        Wire.requestFrom(DS1307_ADDR, 1);
+        data = Wire.read();
 
-    bitWrite(data, 5, meridiem);
+        bitWrite(data, 5, meridiem);
 
-    Wire.beginTransmission(DS1307_ADDR);
-    Wire.write(0x02);  // Hour Register
-    Wire.write(data);
-    Wire.endTransmission();
+        Wire.beginTransmission(DS1307_ADDR);
+        Wire.write(0x02);  // Hour Register
+        Wire.write(data);
+        Wire.endTransmission();
+      }
 }
 
 uint8_t DS1307::getMeridiem()
 {
     bool flag;
     uint8_t data;
-    Wire.beginTransmission(DS1307_ADDR);
-    Wire.write(0x02);
-    Wire.endTransmission();
+    if (RTC.getHourMode() == CLOCK_H12)
+    {
+      Wire.beginTransmission(DS1307_ADDR);
+      Wire.write(0x02);
+      Wire.endTransmission();
 
-    Wire.requestFrom(DS1307_ADDR, 1);
-    data = Wire.read();
+      Wire.requestFrom(DS1307_ADDR, 1);
+      data = Wire.read();
 
-    flag = bitRead(data,5);
-
-    return (flag);
+      flag = bitRead(data,5);
+      return (flag);
+    }
+    else
+      return (HOUR_24);
 }
 
 /*-----------------------------------------------------------
 get & set Second
 -----------------------------------------------------------*/
-uint8_t DS1307::getSecond()
+uint8_t DS1307::getSeconds()
 {
     uint8_t second;
 
@@ -172,7 +179,7 @@ uint8_t DS1307::getSecond()
 
 }
 
-void DS1307::setSecond(uint8_t second)
+void DS1307::setSeconds(uint8_t second)
 {
     uint8_t ch_bit;
     Wire.beginTransmission(DS1307_ADDR);
@@ -195,7 +202,7 @@ void DS1307::setSecond(uint8_t second)
 /*-----------------------------------------------------------
 getMinute
 -----------------------------------------------------------*/
-uint8_t DS1307::getMinute()
+uint8_t DS1307::getMinutes()
 {
     uint8_t minute;
     Wire.beginTransmission(DS1307_ADDR);
@@ -206,7 +213,7 @@ uint8_t DS1307::getMinute()
     return (bcd2bin(minute));
 }
 
-void DS1307::setMinute(uint8_t minute)
+void DS1307::setMinutes(uint8_t minute)
 {
     Wire.beginTransmission(DS1307_ADDR);
     Wire.write(0x01);  // Minute Register
@@ -215,56 +222,61 @@ void DS1307::setMinute(uint8_t minute)
 }
 
 /*-----------------------------------------------------------
-getHour
+getHours
 -----------------------------------------------------------*/
-uint8_t DS1307::getHour()
+uint8_t DS1307::getHours()
 {
     uint8_t hour;
-    bool flag;
+    bool h_mode;
+    h_mode = RTC.getHourMode();
 
     Wire.beginTransmission(DS1307_ADDR);
     Wire.write(0x02);  // Hour Register
     Wire.endTransmission();
     Wire.requestFrom(DS1307_ADDR, 1);
     hour = Wire.read();
-     if (RTC.getHourMode() == CLOCK_H24)
-     {
-        return (bcd2bin(hour));
-     }
-
-
-    if (RTC.getHourMode() == CLOCK_H12)
+    if (h_mode == CLOCK_H24)
     {
-        //Serial.print("24: Get Hour() ");
-        //Serial.println(hour,BIN);
-
-         bitClear(hour,5);
-
-        return (bcd2bin(hour));
+      return (bcd2bin(hour));
+    }
+    if (h_mode == CLOCK_H12)
+    {
+      bitClear(hour,5);
+      bitClear(hour,6);
+      return (bcd2bin(hour));
     }
 }
 
-void  DS1307::setHour(uint8_t hour)
+void  DS1307::setHours(uint8_t hour)
 {
+    bool h_mode,meridiem;
+    h_mode = RTC.getHourMode();
+
     Wire.beginTransmission(DS1307_ADDR);
     Wire.write(0x02);  // Hour Register
 
-    if(RTC.getHourMode() == CLOCK_H24)
+    if(h_mode == CLOCK_H24)
     {
-        //Serial.println(hour);
-
-        //Serial.print("24: Set Hour() ");
-        //Serial.println(hour,BIN);
+      Wire.write(bin2bcd(hour));
     }
-/*
-    if (RTC.getHourMode() == CLOCK_H12)
+    if(h_mode == CLOCK_H12)
     {
+      if(hour > 12)
+      {
+        hour = hour % 12;
         hour = bin2bcd(hour);
-        bitWrite(hour,5,RTC.getMeridiem());
-     }
-     */
-
-     Wire.write(bin2bcd(hour));
+        bitSet(hour,6);
+        bitSet(hour,5);
+        Wire.write(hour);
+      }
+      else
+      {
+        hour = bin2bcd(hour);
+        bitSet(hour,6);
+        bitClear(hour,5);
+        Wire.write(hour);
+      }
+    }
     Wire.endTransmission();
 }
 
@@ -401,7 +413,7 @@ void DS1307::setDateTime(char* date, char* time)
 {
     uint8_t day, month, hour, minute, second;
     uint16_t year;
-// sample input: date = "Dec 26 2009", time = "12:34:56"
+    // sample input: date = "Dec 26 2009", time = "12:34:56"
     year = atoi(date + 9);
     setYear(year);
     // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
@@ -419,11 +431,11 @@ void DS1307::setDateTime(char* date, char* time)
     day = atoi(date + 4);
     setDay(day);
     hour = atoi(time);
-    setHour(hour);
+    setHours(hour);
     minute = atoi(time + 3);
-    setMinute(minute);
+    setMinutes(minute);
     second = atoi(time + 6);
-    setSecond(second);
+    setSeconds(second);
 }
 
 /*-----------------------------------------------------------
@@ -442,9 +454,9 @@ void DS1307::setEpoch(time_t epoch, time_t e_year, int16_t offset)
     ptr_epoch_tm = gmtime(&rawtime);
     epoch_tm = *ptr_epoch_tm;
 
-    setSecond(epoch_tm.tm_sec); //0x00 - Seconds
-    setMinute(epoch_tm.tm_min);
-    setHour(epoch_tm.tm_hour);
+    setSeconds(epoch_tm.tm_sec); //0x00 - Seconds
+    setMinutes(epoch_tm.tm_min);
+    setHours(epoch_tm.tm_hour);
     setWeek(epoch_tm.tm_wday+1);
     setDay(epoch_tm.tm_mday);
     setMonth(epoch_tm.tm_mon+1);
@@ -461,9 +473,9 @@ time_t DS1307::getEpoch()
     time_t epoch;
     struct tm epoch_tm;
 
-    epoch_tm.tm_sec = getSecond();
-    epoch_tm.tm_min = getMinute();
-    epoch_tm.tm_hour = getHour();
+    epoch_tm.tm_sec = getSeconds();
+    epoch_tm.tm_min = getMinutes();
+    epoch_tm.tm_hour = getHours();
     epoch_tm.tm_wday = getWeek() - 1;
     epoch_tm.tm_mday = getDay();
     epoch_tm.tm_mon = getMonth() - 1;

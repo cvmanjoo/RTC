@@ -29,8 +29,6 @@ class PCF8563
         void setMonth(uint8_t month);
         void setYear(uint16_t year);
 
-
-
         void setDate(uint8_t day, uint8_t month, uint16_t year);
         void setTime(uint8_t hour, uint8_t minute, uint8_t second);
 
@@ -40,10 +38,11 @@ class PCF8563
         uint8_t getSeconds();
         uint8_t getMinutes();
         uint8_t getHours();
+        uint8_t getDay();
         uint8_t getWeek();
         uint8_t getMonth();
         uint16_t getYear();
-        uint8_t getDay();
+
 
         //void setEpoch(time_t epoch, time_t e_year, int16_t offset);
         //time_t getEpoch();
@@ -65,9 +64,6 @@ class PCF8563
         uint8_t getAlarmMinutes();
         //getAlarmTime();
         //getAlarmDay();
-
-
-
 
     private:
         uint8_t bin2bcd (uint8_t val);

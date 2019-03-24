@@ -12,6 +12,7 @@
 
 #define HOUR_AM 0
 #define HOUR_PM 1
+#define HOUR_24 2
 
 #define SQW001Hz 10
 #define SQW04kHz 14
@@ -23,45 +24,39 @@ class DS1307
     public:
         bool begin();
 
+        bool isRunning(void);
+        void startClock();
+        void stopClock();
+
         void setHourMode(uint8_t h_mode);
-        uint8_t getHourMode(); 
+        uint8_t getHourMode();
 
-        void setMeridiem(uint8_t h_mode);
-        uint8_t getMeridiem();  
+        void setMeridiem(uint8_t meridiem);
+        uint8_t getMeridiem();
 
-        void setSecond(uint8_t second);
-        void setMinute(uint8_t minute);
-        void setHour(uint8_t hour);
+        void setSeconds(uint8_t second);
+        void setMinutes(uint8_t minute);
+        void setHours(uint8_t hour);
         void setDay(uint8_t day);
+        void setWeek(uint8_t week);
         void setMonth(uint8_t month);
         void setYear(uint16_t year);
-
-        void setWeek(uint8_t week);
-
-        void setEpoch(time_t epoch, time_t e_year, int16_t offset);
 
         void setDate(uint8_t day, uint8_t month, uint16_t year);
         void setTime(uint8_t hour, uint8_t minute, uint8_t second);
 
-
         void setDateTime(char* date, char* time);
 
-
-        uint16_t getYear();
-        uint8_t getMonth();
+        uint8_t getSeconds();
+        uint8_t getMinutes();
+        uint8_t getHours();
         uint8_t getDay();
-        uint8_t getSecond();
-        uint8_t getMinute();
-        uint8_t getHour();
-
         uint8_t getWeek();
-        
+        uint8_t getMonth();
+        uint16_t getYear();
 
+        void setEpoch(time_t epoch, time_t e_year, int16_t offset);
         time_t getEpoch();
-
-        bool isRunning(void);
-        void startClock();
-        void stopClock();
 
         void outPin(uint8_t mode);
 
