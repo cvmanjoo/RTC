@@ -304,6 +304,52 @@ void PCF8563::setDateTime(char* date, char* time)
 }
 
 /*-----------------------------------------------------------
+setEpoch()
+-----------------------------------------------------------*/
+
+void PCF8563::setEpoch(time_t epoch)
+{
+    time_t rawtime;
+    struct tm epoch_tm , *ptr_epoch_tm;
+    uint16_t year;
+
+    rawtime = epoch;
+    ptr_epoch_tm = gmtime(&rawtime);
+    epoch_tm = *ptr_epoch_tm;
+
+    setSeconds(epoch_tm.tm_sec); //0x00 - Seconds
+    setMinutes(epoch_tm.tm_min);
+    setHours(epoch_tm.tm_hour);
+    setWeek(epoch_tm.tm_wday+1);
+    setDay(epoch_tm.tm_mday);
+    setMonth(epoch_tm.tm_mon+1);
+    setYear(epoch_tm.tm_year+1900);
+
+    Wire.endTransmission();
+}
+
+/*-----------------------------------------------------------
+getEpoch()
+-----------------------------------------------------------*/
+time_t PCF8563::getEpoch()
+{
+    time_t epoch;
+    struct tm epoch_tm;
+
+    epoch_tm.tm_sec = getSeconds();
+    epoch_tm.tm_min = getMinutes();
+    epoch_tm.tm_hour = getHours();
+    epoch_tm.tm_wday = getWeek() - 1;
+    epoch_tm.tm_mday = getDay();
+    epoch_tm.tm_mon = getMonth() - 1;
+    epoch_tm.tm_year = getYear() - 1900;
+
+    epoch = mktime (&epoch_tm);
+
+    return (epoch);
+}
+
+/*-----------------------------------------------------------
 Alarm Functions
 -----------------------------------------------------------*/
 
@@ -429,11 +475,34 @@ bool PCF8563::isAlarmTriggered(void)
 
     Wire.requestFrom(PCF8563_ADDR, 1);
     data= Wire.read();
-    //Serial.print("Debug : data -- ");
-    //Serial.println(data,BIN);
     flag = bitRead(data,3);
 
     return (flag);
+}
+
+bool PCF8563::isAlarmEnabled(void)
+{
+    uint8_t minutes,hours,day,weekday;
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x09);
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8563_ADDR, 4);
+    minutes = Wire.read();
+    hours = Wire.read();
+    day = Wire.read();
+    weekday = Wire.read();
+
+    minutes = bitRead(minutes,7);
+    hours = bitRead(hours,7);
+    day = bitRead(day,7);
+    weekday = bitRead(weekday,7);
+
+    if(minutes||hours||day||weekday)
+        return false;
+    else
+        return true;
 }
 
 

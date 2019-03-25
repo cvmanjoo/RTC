@@ -55,10 +55,12 @@ class DS1307
         uint8_t getMonth();
         uint16_t getYear();
 
-        void setEpoch(time_t epoch, time_t e_year, int16_t offset);
+        void setEpoch(time_t epoch);
         time_t getEpoch();
 
-        void outPin(uint8_t mode);
+        void setOutPin(uint8_t mode);
+        bool isOutPinEnabled();
+        bool isSqweEnabled();
 
     private:
         uint8_t bin2bcd (uint8_t val);

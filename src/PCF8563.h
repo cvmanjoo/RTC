@@ -44,15 +44,15 @@ class PCF8563
         uint16_t getYear();
 
 
-        //void setEpoch(time_t epoch, time_t e_year, int16_t offset);
-        //time_t getEpoch();
+        void setEpoch(time_t epoch);
+        time_t getEpoch();
         //void outPin(uint8_t mode);
 
         //void enableAlarm();
         void disableAlarm();
         void clearAlarm();
 
-        //bool isAlarmEnabled();
+        bool isAlarmEnabled();
         bool isAlarmTriggered();
 
         void setAlarmHours(uint8_t hours);
@@ -64,6 +64,10 @@ class PCF8563
         uint8_t getAlarmMinutes();
         //getAlarmTime();
         //getAlarmDay();
+
+        //void setOutPin(uint8_t mode);
+        //bool isOutPinEnabled();
+        //bool isSqweEnabled();
 
     private:
         uint8_t bin2bcd (uint8_t val);

@@ -378,6 +378,8 @@ void DS1307::setYear(uint16_t year)
 
 /*-----------------------------------------------------------
 setTime
+TODO: Test this for 12 and 24H Clock
+TODO: Add meridiem.
 -----------------------------------------------------------*/
 
 void DS1307::setTime(uint8_t hour, uint8_t minute, uint8_t second)
@@ -391,7 +393,8 @@ void DS1307::setTime(uint8_t hour, uint8_t minute, uint8_t second)
 }
 
 /*-----------------------------------------------------------
-setDate (Should be Optimised)
+setDate
+TODO: Test this
 -----------------------------------------------------------*/
 void DS1307::setDate(uint8_t day, uint8_t month, uint16_t year)
 {
@@ -442,13 +445,11 @@ void DS1307::setDateTime(char* date, char* time)
 setEpoch()
 -----------------------------------------------------------*/
 
-void DS1307::setEpoch(time_t epoch, time_t e_year, int16_t offset)
+void DS1307::setEpoch(time_t epoch)
 {
     time_t rawtime;
     struct tm epoch_tm , *ptr_epoch_tm;
     uint16_t year;
-
-    epoch  = epoch - e_year;
 
     rawtime = epoch;
     ptr_epoch_tm = gmtime(&rawtime);
@@ -522,7 +523,7 @@ void NVRAM::write(uint8_t address, uint8_t data)
 
 /* SQW/OUT pin functions */
 
-void DS1307::outPin(uint8_t mode)
+void DS1307::setOutPin(uint8_t mode)
 {
     Wire.beginTransmission(DS1307_ADDR);
     Wire.write(0x07);
@@ -547,6 +548,30 @@ void DS1307::outPin(uint8_t mode)
         break;
     }
     Wire.endTransmission();
+}
+
+bool DS1307::isOutPinEnabled()
+{
+    uint8_t data;
+    Wire.beginTransmission(DS1307_ADDR);
+    Wire.write(0x07);
+    Wire.endTransmission();
+    Wire.requestFrom(DS1307_ADDR, 1);
+    data = Wire.read();
+    data = bitRead(data,7);
+    return (data);
+}
+
+bool DS1307::isSqweEnabled()
+{
+    uint8_t data;
+    Wire.beginTransmission(DS1307_ADDR);
+    Wire.write(0x07);
+    Wire.endTransmission();
+    Wire.requestFrom(DS1307_ADDR, 1);
+    data = Wire.read();
+    data = bitRead(data,4);
+    return (data);
 }
 
 /* Helpers */
