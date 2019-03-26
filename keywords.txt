@@ -9,7 +9,7 @@
 DS3231	KEYWORD1
 DS1307	KEYWORD1
 PCF8563	KEYWORD1
-RTC KEYWORD1
+RTC	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -47,7 +47,7 @@ getWeek	KEYWORD2
 getMonth	KEYWORD2
 getYear	KEYWORD2
 
-getTemp KEYWORD2
+getTemp	KEYWORD2
 
 setEpoch	KEYWORD2
 getEpoch	KEYWORD2
@@ -57,17 +57,17 @@ getEpoch	KEYWORD2
 # Constants (LITERAL1)
 #######################################
 
-CLOCK_H24   LITERAL1
-CLOCK_H12   LITERAL1
+CLOCK_H24	LITERAL1
+CLOCK_H12	LITERAL1
 
-HOUR_AM   LITERAL1
-HOUR_PM   LITERAL1
-HOUR_24   LITERAL1
+HOUR_AM	LITERAL1
+HOUR_PM	LITERAL1
+HOUR_24	LITERAL1
 
-SQW001Hz   LITERAL1
-SQW04kHz   LITERAL1
-SQW08kHz   LITERAL1
-SQW32kHz   LITERAL1
+SQW001Hz	LITERAL1
+SQW04kHz	LITERAL1
+SQW08kHz	LITERAL1
+SQW32kHz	LITERAL1
 
 ###################################################
 # https://www.arduino.cc/en/Hacking/LibraryTutorial
