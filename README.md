@@ -15,15 +15,4 @@
 * Creating a simple Arduino library for I2C RTCs (Real Time Clock) which can be understand by Beginners.
 *  Inspired by [Arduino Zero](https://www.arduino.cc/en/Reference/RTC) RTC library
 * Accessing all the features of RTCs.
-* Readable code with Comments and[Documentation](../wiki/Home).
-
-### To-Dos
-* DS3231
-  * Alarms
-* DS1307
-    * 12 & 24 Hour Clock
-    * Code Optimisation
-* PCF8563
-    * Alarm
-    * Output Pin  
-* DateTime Object
+* Readable code with Comments and [Documentation](../wiki/Home).

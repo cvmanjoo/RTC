@@ -1,18 +1,20 @@
 #include <Wire.h>
-#include <DS1307.h>
+#include <RTC.h>
+
+static DS1307 RTC;
 
 void setup()
 {
     Serial.begin(9600);
     RTC.begin();
-    
+
     Serial.print("Is Clock Running : ");
     if (RTC.isRunning())
             Serial.println("Yes");
     else
         Serial.println("No. Time may be Inaccurate");
 
-    
+
     Serial.print("Hour Mode : ");
     if (RTC.getHourMode() == CLOCK_H24)
         Serial.println("24 Hours");
@@ -32,7 +34,7 @@ void setup()
     Serial.print(RTC.getMinutes());
     Serial.print(":");
     Serial.print(RTC.getSeconds());
-    
+
     if (RTC.getHourMode() == CLOCK_H12)
     {
       switch(RTC.getMeridiem())
@@ -61,10 +63,10 @@ void setup()
     else
         Serial.println("No");
 
-        
+
 }
 
 void loop()
 {
-    
+
 }

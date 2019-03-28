@@ -7,7 +7,7 @@
 #include <time.h>
 #include <Arduino.h>
 #include <Wire.h>
-#include <PCF8563.h>
+#include <RTC.h>
 
 bool PCF8563::begin()
 {

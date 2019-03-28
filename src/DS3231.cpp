@@ -6,7 +6,7 @@
 
 #include <time.h>
 #include <Wire.h>
-#include "DS3231.h"
+#include <RTC.h>
 
 bool DS3231::begin()
 {

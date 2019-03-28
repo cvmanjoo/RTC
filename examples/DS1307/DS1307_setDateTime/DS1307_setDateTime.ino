@@ -1,15 +1,14 @@
 
 #include <Wire.h>
+#include <RTC.h>
 
-#include <DS1307.h>
-//#include <DS3231.h>
-//#include <PCF8563.h>
+static DS1307 RTC;
 
 void setup()
 {
     Serial.begin(9600);
     RTC.begin();
-   
+
     Serial.print("Is Clock Running: ");
     if (RTC.isRunning())
     {
@@ -21,16 +20,16 @@ void setup()
         Serial.print(RTC.getMonth());
         Serial.print("-");
         Serial.print(RTC.getYear());
-        
+
         Serial.print(" ");
-        
+
         Serial.print(RTC.getHours());
         Serial.print(":");
         Serial.print(RTC.getMinutes());
         Serial.print(":");
         Serial.print(RTC.getSeconds());
         Serial.print("");
-        
+
         if (RTC.getHourMode() == CLOCK_H12)
         {
           switch(RTC.getMeridiem()){
@@ -49,13 +48,13 @@ void setup()
     else
     {
       delay(1000);
-      
+
       Serial.println("No");
       Serial.println("Setting Time");
 
       RTC.setHourMode(CLOCK_H12);
       //RTC.setHourMode(CLOCK_H24);
-      
+
       RTC.setDateTime(__DATE__, __TIME__);
       Serial.println("New Time Set");
       Serial.print(__DATE__);
@@ -67,5 +66,5 @@ void setup()
 
 void loop()
 {
-          
+
 }

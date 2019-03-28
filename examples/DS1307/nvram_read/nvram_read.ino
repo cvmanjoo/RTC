@@ -1,5 +1,7 @@
 #include <Wire.h>
-#include <DS1307.h>
+#include <RTC.h>
+
+static NVRAM NVRAM;
 
 uint8_t address = 0,data = 0;
 
@@ -20,5 +22,5 @@ void setup()
 }
 void loop()
 {
-   
+
 }

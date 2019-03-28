@@ -7,7 +7,7 @@
 #include <time.h>
 #include <Arduino.h>
 #include <Wire.h>
-#include <DS1307.h>
+#include <RTC.h>
 
 bool DS1307::begin()
 {
@@ -121,7 +121,7 @@ void DS1307::setMeridiem(uint8_t meridiem)
 {
     uint8_t data;
 
-    if (RTC.getHourMode() == CLOCK_H12)
+    if (getHourMode() == CLOCK_H12)
     {
         Wire.beginTransmission(DS1307_ADDR);
         Wire.write(0x02);  // Hour Register
@@ -143,7 +143,7 @@ uint8_t DS1307::getMeridiem()
 {
     bool flag;
     uint8_t data;
-    if (RTC.getHourMode() == CLOCK_H12)
+    if (getHourMode() == CLOCK_H12)
     {
       Wire.beginTransmission(DS1307_ADDR);
       Wire.write(0x02);
@@ -228,7 +228,7 @@ uint8_t DS1307::getHours()
 {
     uint8_t hour;
     bool h_mode;
-    h_mode = RTC.getHourMode();
+    h_mode = getHourMode();
 
     Wire.beginTransmission(DS1307_ADDR);
     Wire.write(0x02);  // Hour Register
@@ -250,7 +250,7 @@ uint8_t DS1307::getHours()
 void  DS1307::setHours(uint8_t hour)
 {
     bool h_mode,meridiem;
-    h_mode = RTC.getHourMode();
+    h_mode = getHourMode();
 
     Wire.beginTransmission(DS1307_ADDR);
     Wire.write(0x02);  // Hour Register
