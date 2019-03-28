@@ -410,6 +410,30 @@ void PCF8563::setAlarmMinutes(uint8_t hours)
 }
 
 /*-----------------------------------------------------------
+setAlarmDay()
+-----------------------------------------------------------*/
+
+void PCF8563::setAlarmDay(uint8_t day)
+{
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0B);  // Alarm Day Register
+    Wire.write(bin2bcd(day));
+    Wire.endTransmission();
+}
+
+/*-----------------------------------------------------------
+setAlarmWeekDay()
+-----------------------------------------------------------*/
+
+void PCF8563::setAlarmWeekDay(uint8_t hours)
+{
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0C);  // Alarm Weekday Register
+    Wire.write(bin2bcd(hours));
+    Wire.endTransmission();
+}
+
+/*-----------------------------------------------------------
 //getAlarmHours()
 -----------------------------------------------------------*/
 uint8_t PCF8563::getAlarmHours()
@@ -438,6 +462,37 @@ uint8_t PCF8563::getAlarmMinutes()
     bitClear(minutes,7);
     return (bcd2bin(minutes));
 }
+
+/*-----------------------------------------------------------
+//getAlarmHours()
+-----------------------------------------------------------*/
+uint8_t PCF8563::getAlarmDay()
+{
+    uint8_t day;
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0B);  // Alarm Hour Register
+    Wire.endTransmission();
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    day = Wire.read();
+    bitClear(day,7);
+    return (bcd2bin(day));
+}
+
+/*-----------------------------------------------------------
+//getAlarmMinutes()
+-----------------------------------------------------------*/
+uint8_t PCF8563::getAlarmWeekDay()
+{
+    uint8_t weekday;
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0C);  // Month Register
+    Wire.endTransmission();
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    weekday = Wire.read();
+    bitClear(weekday,7);
+    return (bcd2bin(weekday));
+}
+
 
 /*-----------------------------------------------------------
 void clearAlarm();
@@ -503,6 +558,83 @@ bool PCF8563::isAlarmEnabled(void)
         return false;
     else
         return true;
+}
+
+/*-----------------------------------------------------------
+Timer Functions
+
+bool isTimerEnabled();
+-----------------------------------------------------------*/
+
+bool PCF8563::isTimerEnabled(void)
+{
+    uint8_t data;
+    bool flag;
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0E);
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    data= Wire.read();
+    flag = bitRead(data,7);
+
+    return (flag);
+}
+
+void PCF8563::enableTimer(void)
+{
+    uint8_t data;
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0E);
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    data = Wire.read();
+    bitSet(data,7);
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0E);
+    Wire.write(data);
+    Wire.endTransmission();
+}
+
+void PCF8563::disableTimer(void)
+{
+    uint8_t data;
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0E);
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    data = Wire.read();
+    bitClear(data,7);
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0E);
+    Wire.write(data);
+    Wire.endTransmission();
+}
+
+void PCF8563::setTimer(uint8_t t_seconds)
+{
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0F);
+    Wire.write(t_seconds);
+    Wire.endTransmission();
+}
+
+uint8_t PCF8563::getTimer(void)
+{
+    uint8_t t_seconds;
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0F);
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    t_seconds = Wire.read();
+    return (t_seconds);
 }
 
 
