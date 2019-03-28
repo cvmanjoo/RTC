@@ -7,10 +7,10 @@
 
 #define PCF8563_ADDR 0x51
 
-#define SQW001Hz 10
-#define SQW04kHz 14
-#define SQW08kHz 18
-#define SQW32kHz 32
+#define SQW32kHz 00
+#define SQW10kHz 01
+#define SQW032Hz 10
+#define SQW001Hz 11
 
 class PCF8563
 {
@@ -46,7 +46,8 @@ class PCF8563
 
         void setEpoch(time_t epoch);
         time_t getEpoch();
-        //void outPin(uint8_t mode);
+        
+        //Alarm Functions
 
         //void enableAlarm();
         void disableAlarm();
@@ -57,17 +58,26 @@ class PCF8563
 
         void setAlarmHours(uint8_t hours);
         void setAlarmMinutes(uint8_t minutes);
-        //setAlarmTime();
-        //setAlarmDay();
+        void setAlarmDay(uint8_t day);
+        void setAlarmWeekDay(uint8_t weekday);
+        //void setAlarmTime();
 
         uint8_t getAlarmHours();
         uint8_t getAlarmMinutes();
-        //getAlarmTime();
-        //getAlarmDay();
+        uint8_t getAlarmDay();
+        uint8_t getAlarmWeekDay();
 
         //void setOutPin(uint8_t mode);
         //bool isOutPinEnabled();
         //bool isSqweEnabled();
+
+        //Timer Functions
+        bool isTimerEnabled();
+        void enableTimer();
+        void disableTimer();
+        void setTimer(uint8_t t_seconds);
+        uint8_t getTimer();
+
 
     private:
         uint8_t bin2bcd (uint8_t val);
