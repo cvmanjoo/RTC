@@ -36,3 +36,6 @@
 
 # Visual Studio Code
 .vscode
+examples/DS3231/.DS_Store
+examples/.DS_Store
+.DS_Store
