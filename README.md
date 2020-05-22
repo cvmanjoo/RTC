@@ -1,14 +1,15 @@
 # Project Cronus
-  #### Simple and Organised Arduino library for I2C based RTCs.
 
-  This library enables the functionality for clock reading, clock setting, alarms and timers of I2C RTCs.
+#### Simple and Organised Arduino library for I2C based RTCs.
+
+This library enables the functionality for clock reading, clock setting, alarms and timers of I2C RTCs.
 
 # DS1307
 
 ## Features
 * Real time clock.
 * Non Volatile RAM of 56 bytes.
-* Square wave.
+* Square wave output.
 
 | I2C Address | 0x68 |
 |-------------|------|
@@ -34,5 +35,4 @@
 |-------------|------|
 
 ## Reference & Documentation
-
-* [Github Wiki](../wiki/Home).
+* [RTC Wiki](../../wiki).

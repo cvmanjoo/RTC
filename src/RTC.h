@@ -22,8 +22,6 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#define DS1307_ADDR 0x68
-
 #define CLOCK_H24 0
 #define CLOCK_H12 1
 
@@ -35,6 +33,8 @@
 #define SQW04kHz 14
 #define SQW08kHz 18
 #define SQW32kHz 32
+
+#define DS1307_ADDR 0x68
 
 class DS1307
 {
@@ -90,6 +90,8 @@ class NVRAM
         bool begin();
         uint8_t read(uint8_t address);
         void write(uint8_t address, uint8_t value);
+        void read(uint8_t address, uint8_t *buf, uint8_t size);
+        void write(uint8_t address, uint8_t *buf, uint8_t size);
         uint8_t length = 56;
     private:
 };
@@ -101,68 +103,74 @@ class NVRAM
 
 #define DS3231_ADDR 0x68
 
-#define TIME_H12 0
-#define TIME_H24 1
-
 class DS3231 {
 
     public:
-      bool begin();
+		bool begin();
 
-      void setSecond(uint8_t second);
-      void setMinute(uint8_t minute);
-      void setHour(uint8_t hour);
-      void setDay(uint8_t day);
-      void setMonth(uint8_t month);
-      void setYear(uint16_t year);
+		bool isRunning();
+		void startClock();
+		void stopClock();
 
-      void setWeek(uint8_t week);
+		void setHourMode(uint8_t h_mode);
+		uint8_t getHourMode();
 
-      void setDate(uint8_t day, uint8_t month, uint16_t year);
-      void setTime(uint8_t hour, uint8_t minute, uint8_t second);
+		void setMeridiem(uint8_t meridiem);
+		uint8_t getMeridiem();
 
-      void setEpoch(time_t epoch, time_t e_year, int16_t offset);
+		void setSeconds(uint8_t second);
+		void setMinutes(uint8_t minute);
+		void setHours(uint8_t hour);
+		void setDay(uint8_t day);
+		void setMonth(uint8_t month);
+		void setYear(uint16_t year);
 
-      void setDateTime(char* date, char* time);
+		void setWeek(uint8_t week);
 
-      uint16_t getYear();
-      uint8_t getMonth();
-      uint8_t getDay();
-      uint8_t getSecond();
-      uint8_t getMinute();
-      uint8_t getHour();
+		void setDate(uint8_t day, uint8_t month, uint16_t year);
+		void setTime(uint8_t hour, uint8_t minute, uint8_t second);
 
-      uint8_t getWeek();
+		void setEpoch(time_t epoch, time_t e_year, int16_t offset);
 
-      time_t getEpoch();
+		void setDateTime(char* date, char* time);
 
-      void enableAlarmPin();
-      void enableAlarm1();
-      void enableAlarm2();
+		uint16_t getYear();
+		uint8_t getMonth();
+		uint8_t getDay();
+		uint8_t getSeconds();
+		uint8_t getMinutes();
+		uint8_t getHours();
 
-      void disableAlarm1();
-      void disableAlarm2();
+		uint8_t getWeek();
 
-      void setAlarm1();
-      void setAlarm1(uint8_t second);
-      void setAlarm1(uint8_t minute, uint8_t second);
-      void setAlarm1(uint8_t hour, uint8_t minute, uint8_t second);
-      void setAlarm1(uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
+		time_t getEpoch();
 
-      void setAlarm2();
-      void setAlarm2(uint8_t minute);
-      void setAlarm2(uint8_t hour, uint8_t minute);
-      void setAlarm2(uint8_t day, uint8_t hour, uint8_t minute);
+		void enableAlarmPin();
+		void enableAlarm1();
+		void enableAlarm2();
 
-      bool isAlarm1Tiggered();
-      bool isAlarm2Tiggered();
+		void disableAlarm1();
+		void disableAlarm2();
 
-      bool lostPower();
-      void StartClock();
-      float getTemp();
+		void setAlarm1();
+		void setAlarm1(uint8_t second);
+		void setAlarm1(uint8_t minute, uint8_t second);
+		void setAlarm1(uint8_t hour, uint8_t minute, uint8_t second);
+		void setAlarm1(uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
 
-      //uint8_t getRegister(uint8_t reg);
-      //void setRegister(uint8_t reg, uint8_t data);
+		void setAlarm2();
+		void setAlarm2(uint8_t minute);
+		void setAlarm2(uint8_t hour, uint8_t minute);
+		void setAlarm2(uint8_t day, uint8_t hour, uint8_t minute);
+
+		bool isAlarm1Tiggered();
+		bool isAlarm2Tiggered();
+
+
+		float getTemp();
+
+		//uint8_t getRegister(uint8_t reg);
+		//void setRegister(uint8_t reg, uint8_t data);
 
     private:
       uint8_t bin2bcd (uint8_t val);
