@@ -18,6 +18,7 @@ void setup()
       Serial.println(" 0x00");
       delay(250);
     }
+    Serial.println("NVRAM Cleared!");
 }
 void loop()
 {

@@ -184,43 +184,49 @@ uint8_t DS3231::getMeridiem()
 
 uint8_t DS3231::getSeconds()
 {
-	uint8_t second;
+	uint8_t seconds;
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x00);  // Second Register
 	Wire.endTransmission();
 	Wire.requestFrom(DS3231_ADDR, 1);
-	second = Wire.read();
-	return (bcd2bin(second));
+	seconds = Wire.read();
+	return (bcd2bin(seconds));
 }
 
-void DS3231::setSeconds(uint8_t second)
+void DS3231::setSeconds(uint8_t seconds)
 {
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x00);  // Second Register
-	Wire.write(bin2bcd(second));
-	Wire.endTransmission();
+	if (seconds <= 59)
+	{
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x00);  // Second Register
+		Wire.write(bin2bcd(seconds));
+		Wire.endTransmission();
+	}
 }
 
 /*-----------------------------------------------------------
-getMinute
+getMinutes
 -----------------------------------------------------------*/
 uint8_t DS3231::getMinutes()
 {
-	uint8_t minute;
+	uint8_t minutes;
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x01);  // Minute Register
 	Wire.endTransmission();
 	Wire.requestFrom(DS3231_ADDR, 1);
-	minute = Wire.read();
-	return (bcd2bin(minute));
+	minutes = Wire.read();
+	return (bcd2bin(minutes));
 }
 
-void DS3231::setMinutes(uint8_t minute)
+void DS3231::setMinutes(uint8_t minutes)
 {
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x01);  // Minute Register
-	Wire.write(bin2bcd(minute));
-	Wire.endTransmission();
+	if (minutes <= 59)
+	{
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x01);  // Minute Register
+		Wire.write(bin2bcd(minutes));
+		Wire.endTransmission();
+	}
 }
 
 /*-----------------------------------------------------------
@@ -228,7 +234,7 @@ getHour
 -----------------------------------------------------------*/
 uint8_t DS3231::getHours()
 {
-	uint8_t hour;
+	uint8_t hours;
 	bool h_mode;
 	h_mode = getHourMode();
 
@@ -236,52 +242,67 @@ uint8_t DS3231::getHours()
 	Wire.write(0x02);  // Hour Register
 	Wire.endTransmission();
 	Wire.requestFrom(DS3231_ADDR, 1);
-	hour = Wire.read();
+	hours = Wire.read();
 	if (h_mode == CLOCK_H24)
 	{
-		return (bcd2bin(hour));
-	}
-	if (h_mode == CLOCK_H12)
-	{
-		bitClear(hour, 5);
-		bitClear(hour, 6);
-		return (bcd2bin(hour));
-	}
-}
-
-void  DS3231::setHours(uint8_t hour)
-{
-	bool h_mode, meridiem;
-	h_mode = getHourMode();
-
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x02);  // Hour Register
-
-	if (h_mode == CLOCK_H24)
-	{
-		Wire.write(bin2bcd(hour));
+		return (bcd2bin(hours));
 	}
 	else if (h_mode == CLOCK_H12)
 	{
-		if (hour == 0)
-			hour = 12;
-		else if (hour < 12)
-		{
-			hour = bin2bcd(hour);
-			bitSet(hour, 6);
-			bitClear(hour, 5);
-			Wire.write(hour);
-		}
-		else
-		{
-			hour = hour % 12;
-			hour = bin2bcd(hour);
-			bitSet(hour, 6);
-			bitSet(hour, 5);
-			Wire.write(hour);
-		}
+		bitClear(hours, 5);
+		bitClear(hours, 6);
+		return (bcd2bin(hours));
 	}
-	Wire.endTransmission();
+}
+
+void  DS3231::setHours(uint8_t hours)
+{
+	bool h_mode;
+	if (hours <= 23)
+	{
+		h_mode = getHourMode();
+
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x02);  // Hour Register
+
+		if (h_mode == CLOCK_H24)
+		{
+			Wire.write(bin2bcd(hours));
+		}
+		else if (h_mode == CLOCK_H12)
+		{
+			if (hours == 0)
+			{
+				hours = bin2bcd(12);
+				bitSet(hours, 6);
+				bitClear(hours, 5);
+				Wire.write(hours);
+			}
+			else if (hours <= 11)
+			{
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitClear(hours, 5);
+				Wire.write(hours);
+			}
+			else if (hours == 12)
+			{
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitSet(hours, 5);
+				Wire.write(hours);
+			}
+			else
+			{
+				hours -= 12;
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitSet(hours, 5);
+				Wire.write(hours);
+			}
+		}
+		Wire.endTransmission();
+	}
 }
 
 /*-----------------------------------------------------------
@@ -300,10 +321,13 @@ uint8_t DS3231::getWeek()
 
 void DS3231::setWeek(uint8_t week)
 {
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x03);  // Minute Register
-	Wire.write(week);
-	Wire.endTransmission();
+	if (week >= 1 && week <= 7)
+	{
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x03);  // Minute Register
+		Wire.write(week);
+		Wire.endTransmission();
+	}
 }
 
 /*-----------------------------------------------------------
@@ -322,10 +346,13 @@ uint8_t DS3231::getDay()
 
 void DS3231::setDay(uint8_t day)
 {
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x04);  // Day Register
-	Wire.write(bin2bcd(day));
-	Wire.endTransmission();
+	if (day >= 1 && day <= 31)
+	{
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x04);  // Day Register
+		Wire.write(bin2bcd(day));
+		Wire.endTransmission();
+	}
 }
 
 /*-----------------------------------------------------------
@@ -350,11 +377,13 @@ setMonth (Perfect)
 
 void DS3231::setMonth(uint8_t month)
 {
-	uint8_t century;
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x05);  // Month Register
-	Wire.write(month);
-	Wire.endTransmission();
+	if (month >= 1 && month <= 12)
+	{
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x05);  // Month Register
+		Wire.write(month);
+		Wire.endTransmission();
+	}
 }
 
 /*-----------------------------------------------------------
@@ -377,7 +406,7 @@ uint16_t DS3231::getYear()
 
 void DS3231::setYear(uint16_t year)
 {
-	year = year % 100; 						//Converting to 2 Digit   
+	year = year % 100; 						//Converting to 2 Digit
 	Wire.beginTransmission(DS3231_ADDR);	/* Writing 2 Digit year to Year Register(0x06) */
 	Wire.write(0x06);  						// Year Register to write year
 	Wire.write(bin2bcd(year));
@@ -388,53 +417,55 @@ void DS3231::setYear(uint16_t year)
 setTime
 -----------------------------------------------------------*/
 
-void DS3231::setTime(uint8_t hour, uint8_t minute, uint8_t second)
+void DS3231::setTime(uint8_t hours, uint8_t minutes, uint8_t seconds)
 {
-	bool h_mode, meridiem;
-	h_mode = getHourMode();
+	if (hours <= 23 && minutes <= 59 && seconds <= 59)
+	{
+		bool h_mode;
+		h_mode = getHourMode();
 
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x00);  // Time Register
-	Wire.write(bin2bcd(second));
-	Wire.write(bin2bcd(minute));
-	if (h_mode == CLOCK_H24)
-	{
-		Wire.write(bin2bcd(hour));
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x00);  // Time Register
+		Wire.write(bin2bcd(seconds));
+		Wire.write(bin2bcd(minutes));
+		if (h_mode == CLOCK_H24)
+		{
+			Wire.write(bin2bcd(hours));
+		}
+		else if (h_mode == CLOCK_H12)
+		{
+			if (hours == 0)
+			{
+				hours = bin2bcd(12);
+				bitSet(hours, 6);
+				bitClear(hours, 5);
+				Wire.write(hours);
+			}
+			else if (hours <= 11)
+			{
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitClear(hours, 5);
+				Wire.write(hours);
+			}
+			else if (hours == 12)
+			{
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitSet(hours, 5);
+				Wire.write(hours);
+			}
+			else
+			{
+				hours -= 12;
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitSet(hours, 5);
+				Wire.write(hours);
+			}
+		}
+		Wire.endTransmission();
 	}
-	else if (h_mode == CLOCK_H12)
-	{
-		if (hour == 0)
-		{
-			hour = bin2bcd(12);
-			bitSet(hour, 6);
-			bitClear(hour, 5);
-			Wire.write(hour);
-			Wire.write(bin2bcd(hour));
-		}
-		else if (hour <= 11)
-		{
-			hour = bin2bcd(hour);
-			bitSet(hour, 6);
-			bitClear(hour, 5);
-			Wire.write(hour);
-		}
-		else if(hour == 12)
-		{
-			hour = bin2bcd(hour);
-			bitSet(hour, 6);
-			bitSet(hour, 5);
-			Wire.write(hour);
-		}
-		else
-		{
-			hour = hour % 12;
-			hour = bin2bcd(hour);
-			bitSet(hour, 6);
-			bitSet(hour, 5);
-			Wire.write(hour);
-		}
-	}
-	Wire.endTransmission();
 }
 
 /*-----------------------------------------------------------
@@ -493,7 +524,6 @@ void DS3231::setEpoch(time_t epoch, time_t e_year, int16_t offset)
 {
 	time_t rawtime;
 	struct tm epoch_tm, * ptr_epoch_tm;
-	uint16_t year;
 
 	epoch = epoch - e_year;
 
@@ -628,7 +658,7 @@ void DS3231::disableAlarm1()
 	Wire.endTransmission();
 	Wire.requestFrom(DS3231_ADDR, 1);
 	data = Wire.read();
-	bitWrite(data, 0, 0);             // Write  A1F Register to 0 to clear Alaram 1 flag
+	bitWrite(data, 0, 0);             // Write  A1F Register to 0 to clear Alarm 1 flag
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0F);               // Control Register (0Fh)
 	Wire.write(bin2bcd(data));
@@ -655,11 +685,33 @@ void DS3231::disableAlarm2()
 	Wire.endTransmission();
 	Wire.requestFrom(DS3231_ADDR, 1);
 	data = Wire.read();
-	bitWrite(data, 1, 0);             // Write  A1F Register to 0 to clear Alaram 2 flag
+	bitWrite(data, 1, 0);             // Write  A1F Register to 0 to clear Alarm 2 flag
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0F);               // Control Register (0Fh)
 	Wire.write(bin2bcd(data));
 	Wire.endTransmission();
+}
+
+bool DS3231::isAlarm1Enabled()
+{
+	uint8_t data;
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x0E);               // Control Register (0Fh)
+	Wire.endTransmission();
+	Wire.requestFrom(DS3231_ADDR, 1);
+	data = Wire.read();
+	return (bitRead(data, 0));
+}
+
+bool DS3231::isAlarm2Enabled()
+{
+	uint8_t data;
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x0E);               // Control Register (0Fh)
+	Wire.endTransmission();
+	Wire.requestFrom(DS3231_ADDR, 1);
+	data = Wire.read();
+	return (bitRead(data, 1));
 }
 
 
@@ -680,8 +732,6 @@ void DS3231::setAlarm1()
 
 void DS3231::setAlarm1(uint8_t second)
 {
-	enableAlarm1();
-
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x07);
 	Wire.write(bin2bcd(second));    // 0x07 Alarm1 Second
@@ -693,8 +743,6 @@ void DS3231::setAlarm1(uint8_t second)
 
 void DS3231::setAlarm1(uint8_t minute, uint8_t second)
 {
-	enableAlarm1();
-
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x07);
 	Wire.write(bin2bcd(second));    // 0x07 Alarm1 Second
@@ -704,38 +752,142 @@ void DS3231::setAlarm1(uint8_t minute, uint8_t second)
 	Wire.endTransmission();
 }
 
-void DS3231::setAlarm1(uint8_t hour, uint8_t minute, uint8_t second)
+void DS3231::setAlarm1(uint8_t hours, uint8_t minutes, uint8_t seconds)
 {
-	enableAlarm1();
+	if (hours <= 23 && minutes <= 59 && seconds <= 59)
+	{
+		bool h_mode;
+		h_mode = getHourMode();
+
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x07);
+		Wire.write(bin2bcd(seconds));    // 0x07 Alarm1 Second
+		Wire.write(bin2bcd(minutes));    // 0x08 Alarm1 Minute
+		if (h_mode == CLOCK_H24)
+		{
+			Wire.write(bin2bcd(hours));
+		}
+		else if (h_mode == CLOCK_H12)
+		{
+			if (hours == 0)
+			{
+				hours = bin2bcd(12);
+				bitSet(hours, 6);
+				bitClear(hours, 5);
+				Wire.write(hours);
+			}
+			else if (hours <= 11)
+			{
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitClear(hours, 5);
+				Wire.write(hours);
+			}
+			else if (hours == 12)
+			{
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitSet(hours, 5);
+				Wire.write(hours);
+			}
+			else
+			{
+				hours -= 12;
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitSet(hours, 5);
+				Wire.write(hours);
+			}
+		}
+		Wire.write(0x80); 
+		Wire.endTransmission();
+	}
+}
+
+void DS3231::setAlarm1(uint8_t day, uint8_t hours, uint8_t minutes, uint8_t seconds)
+{
+	if (hours <= 23 && minutes <= 59 && seconds <= 59)
+	{
+		bool h_mode;
+		h_mode = getHourMode();
+
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x07);
+		Wire.write(bin2bcd(seconds));    // 0x07 Alarm1 Second
+		Wire.write(bin2bcd(minutes));    // 0x08 Alarm1 Minute
+		if (h_mode == CLOCK_H24)
+		{
+			Wire.write(bin2bcd(hours));
+		}
+		else if (h_mode == CLOCK_H12)
+		{
+			if (hours == 0)
+			{
+				hours = bin2bcd(12);
+				bitSet(hours, 6);
+				bitClear(hours, 5);
+				Wire.write(hours);
+			}
+			else if (hours <= 11)
+			{
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitClear(hours, 5);
+				Wire.write(hours);
+			}
+			else if (hours == 12)
+			{
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitSet(hours, 5);
+				Wire.write(hours);
+			}
+			else
+			{
+				hours -= 12;
+				hours = bin2bcd(hours);
+				bitSet(hours, 6);
+				bitSet(hours, 5);
+				Wire.write(hours);
+			}
+		}
+		Wire.write(bin2bcd(day)); 
+		Wire.endTransmission();
+	}
+}
+
+DateTime DS3231::getAlarm1()
+{
+	DateTime Alarm1;
+	uint8_t seconds,minutes,hours,date;
 
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x07);
-	Wire.write(bin2bcd(second));    // 0x07 Alarm1 Second
-	Wire.write(bin2bcd(minute));    // 0x08 Alarm1 Minute
-	Wire.write(bin2bcd(hour));      // 0x09 Alarm1 Hour
-	Wire.write(0x80);               // 0x0A Alarm1 Day
 	Wire.endTransmission();
+    Wire.requestFrom(DS3231_ADDR, 4);
+
+    seconds = Wire.read();
+	bitClear(seconds,7);
+	Alarm1.seconds = bcd2bin(seconds);
+
+	minutes = Wire.read();
+	bitClear(minutes,7);
+	Alarm1.minutes = bcd2bin(minutes);
+
+	hours = Wire.read();
+	bitClear(hours,7);
+	Alarm1.hours = bcd2bin(hours);
+
+	date = Wire.read();
+	bitClear(date,7);
+	Alarm1.day = bcd2bin(date);
+
+	return(Alarm1);
 }
-
-void DS3231::setAlarm1(uint8_t day, uint8_t hour, uint8_t minute, uint8_t second)
-{
-	enableAlarm1();
-
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x07);
-	Wire.write(bin2bcd(second));    // 0x07 Alarm1 Second
-	Wire.write(bin2bcd(minute));    // 0x08 Alarm1 Minute
-	Wire.write(bin2bcd(hour));      // 0x09 Alarm1 Hour
-	Wire.write(bin2bcd(day));       // 0x0A Alarm1 Day
-	Wire.endTransmission();
-}
-
 //Alarm2
 
 void DS3231::setAlarm2()
 {
-	enableAlarm2();
-
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0B);
 	Wire.write(0x80);    // 0x0B Alarm2 Minute
@@ -746,8 +898,6 @@ void DS3231::setAlarm2()
 
 void DS3231::setAlarm2(uint8_t minute)
 {
-	enableAlarm2();
-
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0B);
 	Wire.write(bin2bcd(minute));    // 0x0B Alarm2 Minute
@@ -758,8 +908,6 @@ void DS3231::setAlarm2(uint8_t minute)
 
 void DS3231::setAlarm2(uint8_t hour, uint8_t minute)
 {
-	enableAlarm2();
-
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0B);
 	Wire.write(bin2bcd(minute));    // 0x0B Alarm2 Minute
@@ -770,12 +918,6 @@ void DS3231::setAlarm2(uint8_t hour, uint8_t minute)
 
 void DS3231::setAlarm2(uint8_t day, uint8_t hour, uint8_t minute)
 {
-	enableAlarm2();
-
-	//Serial.print("CPP:Minute : ");
-	//Serial.print(minute,BIN);
-	//Serial.println();
-
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0B);
 	Wire.write(bin2bcd(minute));    // 0x0B Alarm2 Minute
@@ -806,9 +948,128 @@ bool DS3231::isAlarm2Tiggered()
 	return (bitRead(data, 1));
 }
 
+void DS3231::clearAlarm1()
+{
+	uint8_t data;
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x0F);               // Control Register (0Fh)
+	Wire.endTransmission();
+	Wire.requestFrom(DS3231_ADDR, 1);
+	data = Wire.read();
+	bitClear(data,0);
+	
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x0F);				// Control Register (0Fh)
+	Wire.write(data);               
+	Wire.endTransmission();
+	
+	
+}
+
+void DS3231::clearAlarm2()
+{
+	uint8_t data;
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x0F);               // Control Register (0Fh)
+	Wire.endTransmission();
+	Wire.requestFrom(DS3231_ADDR, 1);
+	data = Wire.read();
+	bitClear(data,1);
+	
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x0F);				// Control Register (0Fh)
+	Wire.write(data);               
+	Wire.endTransmission();
+}
+
+void DS3231:: setOutPin(uint8_t mode)
+{
+	uint8_t data;
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x0E);
+	Wire.endTransmission();
+	Wire.requestFrom(DS3231_ADDR, 1);
+	data = Wire.read();
+	
+	switch (mode)
+	{
+		case SQW001Hz:
+			bitClear(data,4);
+			bitClear(data,3);
+			break;
+		case SQW01kHz:
+			bitClear(data,4);
+			bitSet(data,3);
+			break;
+		case SQW04kHz:
+			bitSet(data,4);
+			bitClear(data,3);
+			break;
+		case SQW08kHz:
+			bitSet(data,4);
+			bitSet(data,3);
+			break;
+	}
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x0E);
+	Wire.write(data);
+	Wire.endTransmission();
+}
+
+bool DS3231::getINTPinMode()
+{
+	uint8_t reg;
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x0E);  // Control Register
+	Wire.endTransmission();
+
+	Wire.requestFrom(DS3231_ADDR, 1);
+	reg = Wire.read();
+	
+	return(bitRead(reg,2));
+
+}
+
+void DS3231::enableSqwePin()
+{
+	uint8_t reg;
+
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x0E);  
+	Wire.endTransmission();
+
+	Wire.requestFrom(DS3231_ADDR, 1);
+	reg = Wire.read();
+
+	bitWrite(reg, 2, 0);
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x0E);  
+	Wire.write(bin2bcd(reg));
+	Wire.endTransmission();
+}
+
+
 /*-----------------------------------------------------------
 DS3231 Exclusive Functions
 -----------------------------------------------------------*/
+int8_t DS3231::getAgingOffset()
+{
+	int8_t data;
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x10);               // Aging Offset
+	Wire.endTransmission();
+	Wire.requestFrom(DS3231_ADDR, 1);
+	data = Wire.read();
+	return data;
+}
+void DS3231::setAgingOffset(int8_t data)
+{
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(0x10);              // Aging Offset
+	Wire.write(data);
+	Wire.endTransmission();
+}
+
 
 float DS3231::getTemp()
 {

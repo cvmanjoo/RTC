@@ -45,8 +45,8 @@ void setup()
 
     Serial.println("No");
     Serial.println("Setting Time");
-    RTC.setHourMode(CLOCK_H12);
-    //RTC.setHourMode(CLOCK_H24);
+    //RTC.setHourMode(CLOCK_H12);
+    RTC.setHourMode(CLOCK_H24);
     RTC.setDateTime(__DATE__, __TIME__);
     Serial.println("New Time Set");
     Serial.print(__DATE__);

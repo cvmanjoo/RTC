@@ -14,13 +14,9 @@
 #ifndef RTC_H
 
 //define all the rtc clocks.
-#define DS1307_H
-#define DS3231_H
-#define PCF8563_H
-
-#include <time.h>
-#include <Arduino.h>
-#include <Wire.h>
+//#define DS1307_H
+//#define DS3231_H
+//#define PCF8563_H
 
 #define CLOCK_H24 0
 #define CLOCK_H12 1
@@ -30,9 +26,33 @@
 #define HOUR_24 2
 
 #define SQW001Hz 10
+#define SQW01kHz 11
 #define SQW04kHz 14
 #define SQW08kHz 18
 #define SQW32kHz 32
+
+#include <time.h>
+#include <Arduino.h>
+#include <Wire.h>
+
+/*
+ * DateTime Class
+ * */
+ 
+class DateTime {
+	public:
+		DateTime();
+		DateTime(uint16_t y, uint8_t mo, uint8_t d, uint8_t h, uint8_t mi, uint8_t s);
+		uint8_t seconds;
+        uint8_t minutes;
+        uint8_t hours;
+        uint8_t day;
+        uint8_t week;
+        uint8_t month;
+		uint16_t year;			
+};
+
+
 
 #define DS1307_ADDR 0x68
 
@@ -146,36 +166,49 @@ class DS3231 {
 		time_t getEpoch();
 
 		void enableAlarmPin();
+		
 		void enableAlarm1();
 		void enableAlarm2();
 
 		void disableAlarm1();
 		void disableAlarm2();
+		
+		bool isAlarm1Enabled();
+		bool isAlarm2Enabled();
 
 		void setAlarm1();
 		void setAlarm1(uint8_t second);
 		void setAlarm1(uint8_t minute, uint8_t second);
 		void setAlarm1(uint8_t hour, uint8_t minute, uint8_t second);
 		void setAlarm1(uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
+		
+		DateTime getAlarm1();
 
 		void setAlarm2();
 		void setAlarm2(uint8_t minute);
 		void setAlarm2(uint8_t hour, uint8_t minute);
 		void setAlarm2(uint8_t day, uint8_t hour, uint8_t minute);
+		
+		DateTime getAlarm2();
 
 		bool isAlarm1Tiggered();
 		bool isAlarm2Tiggered();
-
+		
+		void clearAlarm1();
+		void clearAlarm2();
+		
+		void setOutPin(uint8_t mode);
+        bool getINTPinMode();
+        void enableSqwePin();
+        
+        int8_t getAgingOffset();
+        void setAgingOffset(int8_t);
 
 		float getTemp();
-
-		//uint8_t getRegister(uint8_t reg);
-		//void setRegister(uint8_t reg, uint8_t data);
 
     private:
       uint8_t bin2bcd (uint8_t val);
       uint8_t bcd2bin (uint8_t val);
-
 };
 
 /*
@@ -210,7 +243,6 @@ class PCF8563
         void setDate(uint8_t day, uint8_t month, uint16_t year);
         void setTime(uint8_t hour, uint8_t minute, uint8_t second);
 
-
         void setDateTime(char* date, char* time);
 
         uint8_t getSeconds();
@@ -220,7 +252,6 @@ class PCF8563
         uint8_t getWeek();
         uint8_t getMonth();
         uint16_t getYear();
-
 
         void setEpoch(time_t epoch);
         time_t getEpoch();
@@ -270,4 +301,5 @@ static NVRAM NVRAM;
 static PCF8563 RTC;
 
 */
+
 #endif   /* RTC_H */

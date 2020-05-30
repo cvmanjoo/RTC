@@ -2,35 +2,43 @@
 #include <RTC.h>
 
 static DS3231 RTC;
-//float temp;
 
 void setup()
 {
   Serial.begin(9600);
   RTC.begin();
 
-  Serial.println();
-  Serial.println("*** RTC 3231 ***");
-  Serial.print("Is Clock Running : ");
-  if (RTC.isRunning())
-    Serial.println("Yes");
-  else
-    Serial.println("No. Time may be Inaccurate");
-  Serial.print("Hour Mode :");
+
+
   if (RTC.getHourMode() == CLOCK_H12)
-    Serial.println("12 Hours");
-  else
-    Serial.println("24 Hours");
-    
-  Serial.print("RTC Temperature : ");
-  //temp = ;
- 
-  Serial.println(RTC.getTemp());
+  {
+    // RTC.setMeridiem(HOUR_AM);
+  }
+/*
+  RTC.setDay(13);
+  RTC.setMonth(05);
+  RTC.setYear(2020);
+
+  RTC.setHours(9);
+  RTC.setMinutes(47);
+  RTC.setSeconds(56);
+*/
+  RTC.setWeek(1);
+
+    RTC.setHourMode(CLOCK_H12);
+  //RTC.setHourMode(CLOCK_H24);
+
+  RTC.setDate(22,07,29);
+  //RTC.setTime(22,10,20);
+
+  RTC.setHours(22);
+  
+
+
 }
 
 void loop()
 {
-
   switch (RTC.getWeek())
   {
     case 1:
@@ -69,10 +77,11 @@ void loop()
   Serial.print(RTC.getMinutes());
   Serial.print(":");
   Serial.print(RTC.getSeconds());
+  Serial.print(" ");
+
   if (RTC.getHourMode() == CLOCK_H12)
   {
-    switch (RTC.getMeridiem())
-    {
+    switch (RTC.getMeridiem()) {
       case HOUR_AM :
         Serial.print(" AM");
         break;
@@ -81,6 +90,6 @@ void loop()
         break;
     }
   }
-  Serial.println();
+  Serial.println("");
   delay(1000);
 }
