@@ -43,6 +43,7 @@ class DateTime {
 	public:
 		DateTime();
 		DateTime(uint16_t y, uint8_t mo, uint8_t d, uint8_t h, uint8_t mi, uint8_t s);
+		DateTime(uint8_t hour, uint8_t min, uint8_t sec);
 		uint8_t seconds;
         uint8_t minutes;
         uint8_t hours;
@@ -264,17 +265,10 @@ class PCF8563
 
         bool isAlarmEnabled();
         bool isAlarmTriggered();
-
-        void setAlarmHours(uint8_t hours);
-        void setAlarmMinutes(uint8_t minutes);
-        void setAlarmDay(uint8_t day);
-        void setAlarmWeekDay(uint8_t weekday);
-        //void setAlarmTime();
-
-        uint8_t getAlarmHours();
-        uint8_t getAlarmMinutes();
-        uint8_t getAlarmDay();
-        uint8_t getAlarmWeekDay();
+        
+        void setAlarm(uint8_t hours, uint8_t minutes);
+        void setAlarm(uint8_t week,uint8_t day, uint8_t hours, uint8_t minutes);
+        DateTime getAlarm();
 
         //void setOutPin(uint8_t mode);
         //bool isOutPinEnabled();
@@ -286,7 +280,6 @@ class PCF8563
         void disableTimer();
         void setTimer(uint8_t t_seconds);
         uint8_t getTimer();
-
 
     private:
         uint8_t bin2bcd (uint8_t val);

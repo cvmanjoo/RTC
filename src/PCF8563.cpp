@@ -384,114 +384,59 @@ void PCF8563::disableAlarm()
     Wire.endTransmission();
 }
 
-
-/*-----------------------------------------------------------
-setAlarmHours()
------------------------------------------------------------*/
-
-void PCF8563::setAlarmHours(uint8_t hours)
+void PCF8563::setAlarm(uint8_t hours, uint8_t minutes)
 {
     Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x0A);  // Month Register
+    Wire.write(0x09);
+    Wire.write(bin2bcd(minutes));
     Wire.write(bin2bcd(hours));
+    Wire.write(0x80);
+    Wire.write(0x80);
     Wire.endTransmission();
 }
 
-/*-----------------------------------------------------------
-setAlarmMinutes()
------------------------------------------------------------*/
-
-void PCF8563::setAlarmMinutes(uint8_t hours)
+void PCF8563::setAlarm(uint8_t week,uint8_t day, uint8_t hours, uint8_t minutes)
 {
     Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x09);  // Month Register
+    Wire.write(0x09);
+    Wire.write(bin2bcd(minutes));
     Wire.write(bin2bcd(hours));
-    Wire.endTransmission();
-}
-
-/*-----------------------------------------------------------
-setAlarmDay()
------------------------------------------------------------*/
-
-void PCF8563::setAlarmDay(uint8_t day)
-{
-    Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x0B);  // Alarm Day Register
     Wire.write(bin2bcd(day));
+    Wire.write(bin2bcd(week));
     Wire.endTransmission();
 }
 
-/*-----------------------------------------------------------
-setAlarmWeekDay()
------------------------------------------------------------*/
 
-void PCF8563::setAlarmWeekDay(uint8_t hours)
+DateTime PCF8563::getAlarm()
 {
+	uint8_t hours, minutes, day, week;
+	DateTime Alarm;
+
     Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x0C);  // Alarm Weekday Register
-    Wire.write(bin2bcd(hours));
+    Wire.write(0x09);
     Wire.endTransmission();
+    Wire.requestFrom(PCF8563_ADDR, 4);
+    
+	minutes = Wire.read();
+	bitClear(minutes,7);
+	Alarm.minutes = bcd2bin(minutes);
+
+	hours = Wire.read();
+	bitClear(hours,7);
+	Alarm.hours = bcd2bin(hours);
+	
+	day = Wire.read();
+	bitClear(day,7);
+	Alarm.day = bcd2bin(day);
+
+	week = Wire.read();
+	bitClear(week,7);
+	Alarm.week = bcd2bin(week);
+
+	return(Alarm);
 }
 
-/*-----------------------------------------------------------
-//getAlarmHours()
------------------------------------------------------------*/
-uint8_t PCF8563::getAlarmHours()
-{
-    uint8_t hours;
-    Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x0A);  // Alarm Hour Register
-    Wire.endTransmission();
-    Wire.requestFrom(PCF8563_ADDR, 1);
-    hours = Wire.read();
-    bitClear(hours,7);
-    return (bcd2bin(hours));
-}
 
-/*-----------------------------------------------------------
-//getAlarmMinutes()
------------------------------------------------------------*/
-uint8_t PCF8563::getAlarmMinutes()
-{
-    uint8_t minutes;
-    Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x09);  // Month Register
-    Wire.endTransmission();
-    Wire.requestFrom(PCF8563_ADDR, 1);
-    minutes = Wire.read();
-    bitClear(minutes,7);
-    return (bcd2bin(minutes));
-}
-
-/*-----------------------------------------------------------
-//getAlarmHours()
------------------------------------------------------------*/
-uint8_t PCF8563::getAlarmDay()
-{
-    uint8_t day;
-    Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x0B);  // Alarm Hour Register
-    Wire.endTransmission();
-    Wire.requestFrom(PCF8563_ADDR, 1);
-    day = Wire.read();
-    bitClear(day,7);
-    return (bcd2bin(day));
-}
-
-/*-----------------------------------------------------------
-//getAlarmMinutes()
------------------------------------------------------------*/
-uint8_t PCF8563::getAlarmWeekDay()
-{
-    uint8_t weekday;
-    Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x0C);  // Month Register
-    Wire.endTransmission();
-    Wire.requestFrom(PCF8563_ADDR, 1);
-    weekday = Wire.read();
-    bitClear(weekday,7);
-    return (bcd2bin(weekday));
-}
 
 
 /*-----------------------------------------------------------
@@ -554,7 +499,7 @@ bool PCF8563::isAlarmEnabled(void)
     day = bitRead(day,7);
     weekday = bitRead(weekday,7);
 
-    if(minutes||hours||day||weekday)
+    if(minutes && hours && day && weekday)
         return false;
     else
         return true;

@@ -9,13 +9,13 @@
 DS3231	KEYWORD1
 DS1307	KEYWORD1
 PCF8563	KEYWORD1
-RTC	KEYWORD1
+RTC		KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
-begin	KEYWORD2
+begin		KEYWORD2
 isRunning	KEYWORD2
 startClock	KEYWORD2
 stopClock	KEYWORD2
@@ -29,10 +29,10 @@ getMeridiem	KEYWORD2
 setSeconds	KEYWORD2
 setMinutes	KEYWORD2
 setHours	KEYWORD2
-setDay	KEYWORD2
-setWeek	KEYWORD2
+setDay		KEYWORD2
+setWeek		KEYWORD2
 setMonth	KEYWORD2
-setYear	KEYWORD2
+setYear		KEYWORD2
 
 setDate	KEYWORD2
 setTime	KEYWORD2
@@ -42,16 +42,34 @@ setDateTime	KEYWORD2
 getSeconds	KEYWORD2
 getMinutes	KEYWORD2
 getHours	KEYWORD2
-getDay	KEYWORD2
-getWeek	KEYWORD2
+getDay		KEYWORD2
+getWeek		KEYWORD2
 getMonth	KEYWORD2
-getYear	KEYWORD2
+getYear		KEYWORD2
 
-getTemp	KEYWORD2
+getTemp		KEYWORD2
 
 setEpoch	KEYWORD2
 getEpoch	KEYWORD2
 
+#######################################
+# Methods and Functions (KEYWORD2)
+# PCF8563 Keywords
+#######################################
+
+enableAlarm			KEYWORD2
+disableAlarm		KEYWORD2
+clearAlarm			KEYWORD2
+isAlarmEnabled		KEYWORD2
+isAlarmTriggered	KEYWORD2
+setAlarm			KEYWORD2
+getAlarm			KEYWORD2
+
+isTimerEnabled	KEYWORD2
+enableTimer		KEYWORD2
+disableTimer	KEYWORD2
+setTimer		KEYWORD2
+getTimer		KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
