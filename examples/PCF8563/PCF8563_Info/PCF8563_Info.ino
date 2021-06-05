@@ -9,7 +9,7 @@ void setup()
   RTC.begin();
 
   Serial.println();
-
+    Serial.println("*** RTC PCF8563 ***");
   Serial.print("Is Clock Running : ");
   if (RTC.isRunning())
     Serial.println("Yes");

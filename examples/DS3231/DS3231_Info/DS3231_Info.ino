@@ -11,7 +11,7 @@ void setup()
   DateTime A1, A2;
   
   Serial.println();
-  Serial.println("*** RTC 3231 ***");
+  Serial.println("*** RTC DS3231 ***");
   Serial.print("Is Clock Running : ");
   if (RTC.isRunning())
     Serial.println("Yes");

@@ -50,7 +50,7 @@ class DateTime {
         uint8_t day;
         uint8_t week;
         uint8_t month;
-		uint16_t year;			
+		uint16_t year;
 };
 
 
@@ -151,7 +151,8 @@ class DS3231 {
 		void setDate(uint8_t day, uint8_t month, uint16_t year);
 		void setTime(uint8_t hour, uint8_t minute, uint8_t second);
 
-		void setEpoch(time_t epoch, time_t e_year, int16_t offset);
+		void setEpoch(time_t epoch);
+		time_t getEpoch();
 
 		void setDateTime(char* date, char* time);
 
@@ -163,8 +164,6 @@ class DS3231 {
 		uint8_t getHours();
 
 		uint8_t getWeek();
-
-		time_t getEpoch();
 
 		void enableAlarmPin();
 		

@@ -8,37 +8,33 @@ void setup()
   Serial.begin(9600);
   RTC.begin();
 
-
+  RTC.setHourMode(CLOCK_H12);
+  //RTC.setHourMode(CLOCK_H24);
 
   if (RTC.getHourMode() == CLOCK_H12)
   {
-    // RTC.setMeridiem(HOUR_AM);
+    //RTC.setMeridiem(HOUR_PM);
   }
-/*
-  RTC.setDay(13);
-  RTC.setMonth(05);
+
+  RTC.setDay(22);
+  RTC.setMonth(5);
   RTC.setYear(2020);
 
-  RTC.setHours(9);
+  RTC.setHours(23);
   RTC.setMinutes(47);
   RTC.setSeconds(56);
-*/
+
   RTC.setWeek(1);
 
-    RTC.setHourMode(CLOCK_H12);
-  //RTC.setHourMode(CLOCK_H24);
-
-  RTC.setDate(22,07,29);
+  //RTC.setDate(22,07,29);
   //RTC.setTime(22,10,20);
-
-  RTC.setHours(22);
-  
 
 
 }
 
 void loop()
 {
+
   switch (RTC.getWeek())
   {
     case 1:
@@ -81,15 +77,10 @@ void loop()
 
   if (RTC.getHourMode() == CLOCK_H12)
   {
-    switch (RTC.getMeridiem()) {
-      case HOUR_AM :
-        Serial.print(" AM");
-        break;
-      case HOUR_PM :
-        Serial.print(" PM");
-        break;
-    }
+    if(RTC.getMeridiem() == HOUR_AM)
+      Serial.println(" AM");
+    if (RTC.getMeridiem() == HOUR_PM)
+      Serial.println(" PM");     
   }
-  Serial.println("");
   delay(1000);
 }
