@@ -372,6 +372,9 @@ setDate
 -----------------------------------------------------------*/
 void DS1307::setDate(uint8_t day, uint8_t month, uint16_t year)
 {
+	// If year is 2 digits.
+	if(year < 100)
+		year = year + 2000;
 	year = year % 100; //Converting to 2 Digit
 	Wire.beginTransmission(DS1307_ADDR);
 	Wire.write(0x04);
@@ -418,13 +421,16 @@ void DS1307::setDateTime(char* date, char* time)
 setEpoch()
 -----------------------------------------------------------*/
 
-void DS1307::setEpoch(time_t epoch)
+void DS1307::setEpoch(time_t epoch, bool is_unix_epoch=true)
 {
-	time_t rawtime;
 	struct tm epoch_tm, * ptr_epoch_tm;
 	uint16_t year;
-	rawtime = epoch;
-	ptr_epoch_tm = gmtime(&rawtime);
+	// adjust UNIX epoch to ARDUINO epoch, otherwise `tm` struct
+	// is one year and one (leap) day off.
+	if(is_unix_epoch)
+		epoch = epoch - UNIX_OFFSET;
+
+	ptr_epoch_tm = gmtime(&epoch);
 	epoch_tm = *ptr_epoch_tm;
 	setSeconds(epoch_tm.tm_sec); //0x00 - Seconds
 	setMinutes(epoch_tm.tm_min);
@@ -439,7 +445,7 @@ void DS1307::setEpoch(time_t epoch)
 /*-----------------------------------------------------------
 getEpoch()
 -----------------------------------------------------------*/
-time_t DS1307::getEpoch()
+time_t DS1307::getEpoch(bool as_unix_epoch=true)
 {
 	time_t epoch;
 	struct tm epoch_tm;
@@ -451,6 +457,8 @@ time_t DS1307::getEpoch()
 	epoch_tm.tm_mon = getMonth() - 1;
 	epoch_tm.tm_year = getYear() - 1900;
 	epoch = mktime(&epoch_tm);
+	if(as_unix_epoch)
+		epoch += UNIX_OFFSET;
 	return (epoch);
 }
 
