@@ -532,12 +532,13 @@ setDate
 -----------------------------------------------------------*/
 void DS3231::setDate(uint8_t day, uint8_t month, uint16_t year)
 {
+	uint8_t century = year / 100;
 	year = year % 100; //Converting to 2 Digit
 
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x04);
 	Wire.write(bin2bcd(day));
-	Wire.write(bin2bcd(month));
+	Wire.write(bin2bcd(month) | (century >= 20 ? 128 : 0));
 	Wire.write(bin2bcd(year));
 	Wire.endTransmission();
 }
