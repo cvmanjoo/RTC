@@ -393,7 +393,7 @@ void DS3231::setMonth(uint8_t month)
 		month = bin2bcd(month);
 		bitWrite(month,7,century_bit);
 
-		Wire.beginTransmission(PCF8563_ADDR);
+		Wire.beginTransmission(DS3231_ADDR);
 		Wire.write(0x05);  // Month Register
 		Wire.write(month);
 		Wire.endTransmission();
