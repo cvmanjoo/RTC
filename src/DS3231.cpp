@@ -532,12 +532,18 @@ setDate
 -----------------------------------------------------------*/
 void DS3231::setDate(uint8_t day, uint8_t month, uint16_t year)
 {
+	uint8_t century;
+
+	// If year is 2 digits.
+	if(year < 100)
+		year = year + 2000;
+	century = year / 100;
 	year = year % 100; //Converting to 2 Digit
 
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x04);
 	Wire.write(bin2bcd(day));
-	Wire.write(bin2bcd(month));
+	Wire.write(bin2bcd(month) | (century >= 20 ? 128 : 0));
 	Wire.write(bin2bcd(year));
 	Wire.endTransmission();
 }
@@ -581,17 +587,22 @@ setEpoch()
 https://en.wikipedia.org/wiki/Epoch_(computing)
 -----------------------------------------------------------*/
 
-void DS3231::setEpoch(time_t epoch)
+void DS3231::setEpoch(time_t epoch, bool is_unix_epoch=true)
 {
 	uint8_t h_mode, data, century;
 	uint16_t year;
 	struct tm epoch_tm, *ptr_epoch_tm;
 
+	// adjust UNIX epoch to ARDUINO epoch, otherwise `tm` struct
+	// is one year and one (leap) day off.
+	if (is_unix_epoch)
+		epoch = epoch - UNIX_OFFSET;
+
 	ptr_epoch_tm = gmtime(&epoch);
 	epoch_tm = *ptr_epoch_tm;
 
-	century = (epoch_tm.tm_year + 1870) / 100;	// Find Century 
-	year = (epoch_tm.tm_year + 1870) % 100;		//Converting to 2 Digit
+	century = (epoch_tm.tm_year + 1900) / 100;	// Find Century 
+	year = (epoch_tm.tm_year + 1900) % 100;		//Converting to 2 Digit
 
 
 	Wire.beginTransmission(DS3231_ADDR);
@@ -686,7 +697,7 @@ void DS3231::setEpoch(time_t epoch)
 /*-----------------------------------------------------------
 getEpoch()
 -----------------------------------------------------------*/
-time_t DS3231::getEpoch()
+time_t DS3231::getEpoch(bool as_unix_epoch=true)
 {
 	uint8_t century_bit;
 	uint16_t century;
@@ -719,6 +730,8 @@ time_t DS3231::getEpoch()
 	epoch_tm.tm_year = epoch_tm.tm_year + century - 1870;
 
 	epoch = mktime(&epoch_tm);
+	if(as_unix_epoch)
+		epoch += UNIX_OFFSET;
 	return (epoch);
 }
 

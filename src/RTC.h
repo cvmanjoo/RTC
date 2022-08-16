@@ -93,8 +93,8 @@ class DS1307
         uint8_t getMonth();
         uint16_t getYear();
 
-        void setEpoch(time_t epoch);
-        time_t getEpoch();
+        void setEpoch(time_t epoch, bool is_unix_epoch=true);
+        time_t getEpoch(bool as_unix_epoch=true);
 
         void setOutPin(uint8_t mode);
         bool isOutPinEnabled();
@@ -151,8 +151,8 @@ class DS3231 {
 		void setDate(uint8_t day, uint8_t month, uint16_t year);
 		void setTime(uint8_t hour, uint8_t minute, uint8_t second);
 
-		void setEpoch(time_t epoch);
-		time_t getEpoch();
+		void setEpoch(time_t epoch, bool is_unix_epoch=true);
+		time_t getEpoch(bool as_unix_epoch=true);
 
 		void setDateTime(char* date, char* time);
 
