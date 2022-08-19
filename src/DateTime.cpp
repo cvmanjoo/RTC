@@ -5,7 +5,7 @@
  */
 
 #include <time.h>
-#include <RTC.h>
+#include <I2C_RTC.h>
 
 DateTime::DateTime()
 {

@@ -1,8 +1,11 @@
 #include <Wire.h>
-#include <RTC.h>
+#include <I2C_RTC.h>
 
-static DS3231 RTC;
 //static DS1307 RTC;
+static DS3231 RTC;
+//static PCF8563 RTC;
+//static PCF8523 RTC;
+
 
 void setup()
 {

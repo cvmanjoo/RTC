@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <I2C_RTC.h>
 
-static DS3231 RTC;
+static DS1307 RTC;
 
 void setup()
 {
@@ -13,28 +13,25 @@ void setup()
 
   if (RTC.getHourMode() == CLOCK_H12)
   {
-    //RTC.setMeridiem(HOUR_PM);
+     RTC.setMeridiem(HOUR_PM);
   }
-
-  RTC.setDay(22);
-  RTC.setMonth(5);
+/*
+  RTC.setDay(13);
+  RTC.setMonth(05);
   RTC.setYear(2020);
 
-  RTC.setHours(23);
+  RTC.setHours(9);
   RTC.setMinutes(47);
   RTC.setSeconds(56);
-
+*/
   RTC.setWeek(1);
 
-  //RTC.setDate(22,07,29);
-  //RTC.setTime(22,10,20);
-
-
+  RTC.setDate(22,07,21);
+  RTC.setTime(23,00,00);
 }
 
 void loop()
 {
-
   switch (RTC.getWeek())
   {
     case 1:
@@ -77,10 +74,15 @@ void loop()
 
   if (RTC.getHourMode() == CLOCK_H12)
   {
-    if(RTC.getMeridiem() == HOUR_AM)
-      Serial.println(" AM");
-    if (RTC.getMeridiem() == HOUR_PM)
-      Serial.println(" PM");     
+    switch (RTC.getMeridiem()) {
+      case HOUR_AM :
+        Serial.print(" AM");
+        break;
+      case HOUR_PM :
+        Serial.print(" PM");
+        break;
+    }
   }
+  Serial.println("");
   delay(1000);
 }

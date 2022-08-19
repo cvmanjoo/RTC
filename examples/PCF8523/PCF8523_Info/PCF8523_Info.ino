@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <I2C_RTC.h>
 
-static PCF8563 RTC;
+static PCF8523 RTC;
 
 void setup()
 {
@@ -9,34 +9,26 @@ void setup()
   RTC.begin();
 
   Serial.println();
-    Serial.println("*** RTC PCF8563 ***");
+    Serial.println("*** RTC PCF8523 ***");
   Serial.print("Is Clock Running : ");
   if (RTC.isRunning())
     Serial.println("Yes");
   else
     Serial.println("No");
-
-  Serial.print("Alarm Enabled  : ");
-  if (RTC.isAlarmEnabled())
-    Serial.println("Yes");
+/*
+  Serial.print("Battery Status : ");
+  if (RTC.isBatteryLow())
+    Serial.println("Low");
   else
-    Serial.println("No");
+    Serial.println("Good");
+*/
+//RTC.set    
     
-  Serial.print("Alarm Triggered : ");
-  if (RTC.isAlarmTriggered())
-    Serial.println("Yes");
-  else
-    Serial.println("No");
-
-   Serial.print("Timer Enabled  : ");
-  if (RTC.isTimerEnabled())
-    Serial.println("Yes");
-  else
-    Serial.println("No");
 }
 
 void loop()
 {
+
   Serial.print(RTC.getDay());
   Serial.print("-");
   Serial.print(RTC.getMonth());

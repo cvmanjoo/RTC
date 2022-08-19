@@ -5,8 +5,9 @@
  */
 
 #include <time.h>
+#include <Arduino.h>
 #include <Wire.h>
-#include <RTC.h>
+#include <I2C_RTC.h>
 
 bool DS3231::begin()
 {
@@ -34,10 +35,10 @@ bool DS3231::isRunning(void)
 	return (!(data_e | data_f));
 	//return 1;
 }
+
 /*
  * Working But Incomplete
  */
-
 
 void DS3231::startClock(void)
 {
@@ -106,24 +107,28 @@ void DS3231::setHourMode(uint8_t h_mode)
 {
 	uint8_t data;
 
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x02);  // Hour Register
-	Wire.endTransmission();
+	if(h_mode == CLOCK_H12 || h_mode == CLOCK_H24)
+	{
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x02);  // Hour Register
+		Wire.endTransmission();
 
-	Wire.requestFrom(DS3231_ADDR, 1);
-	data = Wire.read();
+		Wire.requestFrom(DS3231_ADDR, 1);
+		data = Wire.read();
 
-	bitWrite(data, 6, h_mode);
+		bitWrite(data, 6, h_mode);
 
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x02);  // Hour Register
-	Wire.write(data);
-	Wire.endTransmission();
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x02);  // Hour Register
+		Wire.write(data);
+		Wire.endTransmission();
+	}
 }
 
 uint8_t DS3231::getHourMode()
 {
-	uint8_t data, h_mode;
+	bool h_mode;
+	uint8_t data;
 
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x02);
@@ -135,30 +140,32 @@ uint8_t DS3231::getHourMode()
 	h_mode = bitRead(data, 6);
 
 	return (h_mode);
+
 }
 
 /*-----------------------------------------------------------
-get & set HourMode
-
-  void
+setMeridiem(uint8_t meridiem)
 
 -----------------------------------------------------------*/
 
 void DS3231::setMeridiem(uint8_t meridiem)
 {
 	uint8_t data;
-	if (getHourMode() == CLOCK_H12)
+	if(meridiem == HOUR_AM || meridiem == HOUR_PM)
 	{
-		Wire.beginTransmission(DS3231_ADDR);
-		Wire.write(0x02);  // Hour Register
-		Wire.endTransmission();
-		Wire.requestFrom(DS3231_ADDR, 1);
-		data = Wire.read();
-		bitWrite(data, 5, meridiem);
-		Wire.beginTransmission(DS3231_ADDR);
-		Wire.write(0x02);  // Hour Register
-		Wire.write(data);
-		Wire.endTransmission();
+		if (getHourMode() == CLOCK_H12)
+		{
+			Wire.beginTransmission(DS3231_ADDR);
+			Wire.write(0x02);  // Hour Register
+			Wire.endTransmission();
+			Wire.requestFrom(DS3231_ADDR, 1);
+			data = Wire.read();
+			bitWrite(data, 5, meridiem);
+			Wire.beginTransmission(DS3231_ADDR);
+			Wire.write(0x02);  // Hour Register
+			Wire.write(data);
+			Wire.endTransmission();
+		}
 	}
 }
 
@@ -195,7 +202,7 @@ uint8_t DS3231::getSeconds()
 
 void DS3231::setSeconds(uint8_t seconds)
 {
-	if (seconds <= 59)
+	if (seconds >= 00 && seconds <= 59)
 	{
 		Wire.beginTransmission(DS3231_ADDR);
 		Wire.write(0x00);  // Second Register
@@ -220,7 +227,7 @@ uint8_t DS3231::getMinutes()
 
 void DS3231::setMinutes(uint8_t minutes)
 {
-	if (minutes <= 59)
+	if (minutes >= 00 && minutes <= 59)
 	{
 		Wire.beginTransmission(DS3231_ADDR);
 		Wire.write(0x01);  // Minute Register
@@ -258,35 +265,21 @@ uint8_t DS3231::getHours()
 void  DS3231::setHours(uint8_t hours)
 {
 	bool h_mode;
-	if (hours <= 23)
+	if (hours >= 00 && hours <= 23)
 	{
 		h_mode = getHourMode();
 
 		Wire.beginTransmission(DS3231_ADDR);
 		Wire.write(0x02);  // Hour Register
-
 		if (h_mode == CLOCK_H24)
 		{
 			Wire.write(bin2bcd(hours));
 		}
 		else if (h_mode == CLOCK_H12)
 		{
-			if (hours == 0)
+			if (hours > 12)
 			{
-				hours = bin2bcd(12);
-				bitSet(hours, 6);
-				bitClear(hours, 5);
-				Wire.write(hours);
-			}
-			else if (hours <= 11)
-			{
-				hours = bin2bcd(hours);
-				bitSet(hours, 6);
-				bitClear(hours, 5);
-				Wire.write(hours);
-			}
-			else if (hours == 12)
-			{
+				hours = hours % 12;
 				hours = bin2bcd(hours);
 				bitSet(hours, 6);
 				bitSet(hours, 5);
@@ -294,10 +287,9 @@ void  DS3231::setHours(uint8_t hours)
 			}
 			else
 			{
-				hours -= 12;
 				hours = bin2bcd(hours);
 				bitSet(hours, 6);
-				bitSet(hours, 5);
+				bitClear(hours, 5);
 				Wire.write(hours);
 			}
 		}
@@ -324,7 +316,7 @@ void DS3231::setWeek(uint8_t week)
 	if (week >= 1 && week <= 7)
 	{
 		Wire.beginTransmission(DS3231_ADDR);
-		Wire.write(0x03);  // Minute Register
+		Wire.write(0x03);  // Week Register
 		Wire.write(week);
 		Wire.endTransmission();
 	}
@@ -357,7 +349,7 @@ void DS3231::setDay(uint8_t day)
 
 /*-----------------------------------------------------------
 getMonth ()
-	* Take Care of Century Bit
+
 -----------------------------------------------------------*/
 uint8_t DS3231::getMonth()
 {
@@ -369,12 +361,11 @@ uint8_t DS3231::getMonth()
 
 	Wire.requestFrom(DS3231_ADDR, 1);
 	month = Wire.read();
-	bitClear(month,7);		//Clear Century;
+	bitClear(month,7);		//Clear Century Bit;
 	return (bcd2bin(month));
 }
 /*-----------------------------------------------------------
-setMonth (Perfect)
-	* Take Care of Century Bit
+setMonth()
 -----------------------------------------------------------*/
 
 void DS3231::setMonth(uint8_t month)
@@ -402,23 +393,28 @@ void DS3231::setMonth(uint8_t month)
 
 /*-----------------------------------------------------------
 getYear (Completed)
+
+Century Bit
+1 = 1900s
+0 = 2000s
 -----------------------------------------------------------*/
 uint16_t DS3231::getYear()
 {
 	uint8_t century_bit,data;
 	uint16_t century,year;
-
+	
+	// Read Month register for Century
 	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x05);  // Read Month register for Century
+	Wire.write(0x05);  
 	Wire.endTransmission();
 	Wire.requestFrom(DS3231_ADDR,1);
 	data =  Wire.read();
 	century_bit = bitRead(data, 7);
-	if(century_bit == 0)
+	if(century_bit == 1)
 	{
 		century = 1900;
 	}
-	else
+	else if(century_bit == 0)
 	{
 		century = 2000;
 	}
@@ -436,90 +432,86 @@ uint16_t DS3231::getYear()
 void DS3231::setYear(uint16_t year)
 {
 	uint8_t century,data;
-	
-	// If year is 2 digits.
-	if(year < 100)
-		year = year + 2000;
 
-	century = year / 100;	// Find Century 
-	year = year % 100;		//Converting to 2 Digit
-	
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x05);		// Century and month Register
-	Wire.endTransmission();
+	if((year >= 00 && year <= 99) || (year >= 1900 && year <= 2099))
+	{
+		// If year is 2 digits set to 2000s.
+		if(year >= 00 && year <= 99)
+			year = year + 2000;
 
-	Wire.requestFrom(DS3231_ADDR, 1);
-	data = Wire.read();
-	
-	// Set century bit to 1 for year > 2000;
-	if(century == 20)
-		bitSet(data,7);
-	else
-		bitClear(data,7);
+		//Century Calculation
+		if(year >= 1900 && year <= 1999)
+			century = 1;
+		else if (year >= 2000 && year <= 2099)
+			century = 0;
 
-	// Write Century bit to Month Register(0x05)
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x05);  // Seconds Register
-	Wire.write(data);
-	Wire.endTransmission();
+		// Find Century 
+		year = year % 100;		//Converting to 2 Digit
+		
+		// Read Century bit from Month Register(0x05)
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x05);		// Century and month Register
+		Wire.endTransmission();
 
-	// Write 2 Digit year to Year Register(0x06)
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x06);  // Year Register to write year
-	Wire.write(bin2bcd(year));
-	Wire.endTransmission();
+		Wire.requestFrom(DS3231_ADDR, 1);
+		data = Wire.read();
+		
+		// Set century bit to 1 for year > 2000;
+		if(century == 1)
+			bitSet(data,7);
+		else
+			bitClear(data,7);
 
+		// Write Century bit to Month Register(0x05)
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x05);  // Months Register
+		Wire.write(data);
+		Wire.endTransmission();
+
+		// Write 2 Digit year to Year Register(0x06)
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x06);  // Year Register to write year
+		Wire.write(bin2bcd(year));
+		Wire.endTransmission();
+	}
 }
 
 /*-----------------------------------------------------------
 setTime
+
 -----------------------------------------------------------*/
 
 void DS3231::setTime(uint8_t hours, uint8_t minutes, uint8_t seconds)
 {
-	if (hours <= 23 && minutes <= 59 && seconds <= 59)
+	if (hours >= 00 && hours <= 23 && minutes >= 00 && minutes <= 59 && seconds >= 00 && seconds <= 59)
 	{
 		bool h_mode;
 		h_mode = getHourMode();
 
 		Wire.beginTransmission(DS3231_ADDR);
 		Wire.write(0x00);  // Time Register
-		Wire.write(bin2bcd(seconds));
-		Wire.write(bin2bcd(minutes));
+		Wire.write(bin2bcd(seconds));  	// 0x00
+		Wire.write(bin2bcd(minutes));	// 0x01
 		if (h_mode == CLOCK_H24)
 		{
-			Wire.write(bin2bcd(hours));
+			Wire.write(bin2bcd(hours));	// 0x02
 		}
 		else if (h_mode == CLOCK_H12)
 		{
-			if (hours == 0)
+			if (hours > 12)
 			{
-				hours = bin2bcd(12);
-				bitSet(hours, 6);
-				bitClear(hours, 5);
-				Wire.write(hours);
-			}
-			else if (hours <= 11)
-			{
-				hours = bin2bcd(hours);
-				bitSet(hours, 6);
-				bitClear(hours, 5);
-				Wire.write(hours);
-			}
-			else if (hours == 12)
-			{
+				hours = hours % 12;
 				hours = bin2bcd(hours);
 				bitSet(hours, 6);
 				bitSet(hours, 5);
-				Wire.write(hours);
+				Wire.write(hours);	// 0x02
 			}
 			else
 			{
-				hours -= 12;
 				hours = bin2bcd(hours);
 				bitSet(hours, 6);
-				bitSet(hours, 5);
-				Wire.write(hours);
+				bitClear(hours, 5);
+				Wire.write(hours);	// 0x02
 			}
 		}
 		Wire.endTransmission();
@@ -532,18 +524,12 @@ setDate
 -----------------------------------------------------------*/
 void DS3231::setDate(uint8_t day, uint8_t month, uint16_t year)
 {
-	uint8_t century;
-
-	// If year is 2 digits.
-	if(year < 100)
-		year = year + 2000;
-	century = year / 100;
-	year = year % 100; //Converting to 2 Digit
+	year = year % 100; //Convert year to 2 Digit
 
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x04);
 	Wire.write(bin2bcd(day));
-	Wire.write(bin2bcd(month) | (century >= 20 ? 128 : 0));
+	Wire.write(bin2bcd(month));
 	Wire.write(bin2bcd(year));
 	Wire.endTransmission();
 }
@@ -586,8 +572,9 @@ setEpoch()
 
 https://en.wikipedia.org/wiki/Epoch_(computing)
 -----------------------------------------------------------*/
+//void DS3231::setEpoch(time_t epoch, bool is_unix_epoch=true)
 
-void DS3231::setEpoch(time_t epoch, bool is_unix_epoch=true)
+void DS3231::setEpoch(time_t epoch, bool is_unix_epoch)
 {
 	uint8_t h_mode, data, century;
 	uint16_t year;
@@ -637,7 +624,7 @@ void DS3231::setEpoch(time_t epoch, bool is_unix_epoch=true)
 	
 	if (h_mode == CLOCK_H12)
 	{
-		Serial.println("I'm here!");
+		//Serial.println("I'm here!");
 		Wire.beginTransmission(DS3231_ADDR);
 		Wire.write(0x02);  // Hour Register
 		
@@ -697,7 +684,8 @@ void DS3231::setEpoch(time_t epoch, bool is_unix_epoch=true)
 /*-----------------------------------------------------------
 getEpoch()
 -----------------------------------------------------------*/
-time_t DS3231::getEpoch(bool as_unix_epoch=true)
+//time_t DS3231::getEpoch(bool as_unix_epoch=true)
+time_t DS3231::getEpoch(bool as_unix_epoch)
 {
 	uint8_t century_bit;
 	uint16_t century;

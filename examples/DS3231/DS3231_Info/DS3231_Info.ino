@@ -1,5 +1,5 @@
 #include <Wire.h>
-#include <RTC.h>
+#include <I2C_RTC.h>
 
 static DS3231 RTC;
 

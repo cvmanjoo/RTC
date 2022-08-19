@@ -1,6 +1,6 @@
 
 #include <Wire.h>
-#include <RTC.h>
+#include <I2C_RTC.h>
 
 static PCF8563 RTC;
 
