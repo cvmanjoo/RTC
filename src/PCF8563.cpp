@@ -22,56 +22,78 @@ bool PCF8563::begin()
 
 bool PCF8563::isRunning(void)
 {
-    uint8_t data;
-    bool flag;
+	uint8_t reg_00, reg_02; 
+	bool flag;
+
+	Wire.beginTransmission(PCF8563_ADDR);
+	Wire.write(0x00);  
+	Wire.endTransmission();
+
+	Wire.requestFrom(PCF8563_ADDR, 1);
+	reg_00 = Wire.read(); 
+
+	Wire.beginTransmission(PCF8563_ADDR);
+	Wire.write(0x02);
+	Wire.endTransmission();
+
+	Wire.requestFrom(PCF8563_ADDR, 1);
+	reg_02 = Wire.read(); 
+
+	reg_00 = bitRead(reg_00, 5); // Read STOP Bit to check RTC source clock runs
+	reg_02 = bitRead(reg_02, 7); // Read VL Bit to check Clock Integrity 
+
+	return (!(reg_00 | reg_02));
+}
+
+void PCF8563::startClock(void)
+{
+    uint8_t reg_00, reg_02;
 
     Wire.beginTransmission(PCF8563_ADDR);
     Wire.write(0x00);
     Wire.endTransmission();
 
     Wire.requestFrom(PCF8563_ADDR, 1);
-    data = Wire.read();
+    reg_00 = Wire.read();
 
-   flag = bitRead(data,5);
-
-    return (!flag);
-}
-
-void PCF8563::startClock(void) //Not Updated
-{
-    uint8_t data;
-
-    Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x00);
+	Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x02);
     Wire.endTransmission();
 
     Wire.requestFrom(PCF8563_ADDR, 1);
-    data = Wire.read();
+    reg_02 = Wire.read();
 
-    bitClear(data, 5);
+	bitClear(reg_00, 5); // STOP Bit
+	bitClear(reg_00, 3); // TESTC Bit
+	bitClear(reg_02, 7); // VL Bit
+
+	Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x00);  // Control 1 Register
+    Wire.write(reg_00);
+    Wire.endTransmission();
 
     Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x00);  // Seconds Register
-    Wire.write(data);
+    Wire.write(0x02);  // Seconds Register
+    Wire.write(reg_02);
     Wire.endTransmission();
 }
 
-void PCF8563::stopClock(void) //Not Updated
+void PCF8563::stopClock(void)
 {
-	uint8_t data;
+	uint8_t reg_00;
 
 	Wire.beginTransmission(PCF8563_ADDR);
 	Wire.write(0x00);
 	Wire.endTransmission();
 
 	Wire.requestFrom(PCF8563_ADDR, 1);
-	data = Wire.read();
+	reg_00 = Wire.read();
 
-	bitSet(data, 5);
+	bitSet(reg_00, 5); // STOP Bit
 
 	Wire.beginTransmission(PCF8563_ADDR);
-	Wire.write(0x00);  // Seconds Register
-	Wire.write(data);
+	Wire.write(0x00);  // Control 1 Register
+	Wire.write(reg_00);
 	Wire.endTransmission();
 }
 
@@ -98,17 +120,30 @@ uint8_t PCF8563::getSeconds()
 
     Wire.requestFrom(PCF8563_ADDR, 1);
     seconds = Wire.read();
+	bitClear(seconds, 7); // Clearing VL Bit if Set.
     return (bcd2bin(seconds));
 
 }
 
 void PCF8563::setSeconds(uint8_t seconds)
 {
+	uint8_t reg_02, vl_bit;
 	if (seconds >= 00 && seconds <= 59)
 	{
 		Wire.beginTransmission(PCF8563_ADDR);
-		Wire.write(0x02);  // Second Register
-		Wire.write(bin2bcd(seconds));
+		Wire.write(0x02);  // Seconds Register
+		Wire.endTransmission();
+
+		Wire.requestFrom(PCF8563_ADDR, 1);
+    	reg_02 = Wire.read();
+
+		vl_bit = bitRead(reg_02, 7);  
+		seconds = bin2bcd(seconds); 
+		bitWrite(seconds,7,vl_bit);  // Retain VL Bit value
+
+		Wire.beginTransmission(PCF8563_ADDR);
+		Wire.write(0x02);  // Seconds Register
+		Wire.write(seconds);
 		Wire.endTransmission();
 	}
 }
@@ -189,6 +224,27 @@ void PCF8563::setWeek(uint8_t week)
 		Wire.endTransmission();
 	}
 }
+
+void PCF8563::updateWeek()
+{
+	uint16_t y;
+	uint8_t m, d, weekday;
+	
+	y=getYear();
+	m=getMonth();
+	d=getDay();
+	
+	weekday  = (d += m < 3 ? y-- : y - 2, 23*m/9 + d + 4 + y/4- y/100 + y/400)%7;
+
+	if (weekday >= 1 && weekday <= 7)
+	{
+		Wire.beginTransmission(PCF8563_ADDR);
+		Wire.write(0x06);  // Week Register
+		Wire.write(weekday-1);
+		Wire.endTransmission();
+	}
+}
+
 
 /*-----------------------------------------------------------
 getDay
@@ -349,61 +405,32 @@ void PCF8563::setYear(uint16_t year)
 }
 
 /*-----------------------------------------------------------
-setTime
+setTime (Should be Optimised)
 -----------------------------------------------------------*/
 
-void PCF8563::setTime(uint8_t hour, uint8_t minute, uint8_t second)
+void PCF8563::setTime(uint8_t hours, uint8_t minutes, uint8_t seconds)
 {
-    Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x02);  // Year Register
-    Wire.write(bin2bcd(second));	//0x02 Seconds
-    Wire.write(bin2bcd(minute));	//0x03 Minutes
-    Wire.write(bin2bcd(hour));		//0x04 Hours
-    Wire.endTransmission();
+	if (hours >= 00 && hours <= 23 && minutes >= 00 && minutes <= 59 && seconds >= 00 && seconds <= 59)
+	{
+		Wire.beginTransmission(PCF8563_ADDR);
+		Wire.write(0x02);  
+		Wire.write(bin2bcd(seconds));	//0x02 Seconds
+		Wire.write(bin2bcd(minutes));	//0x03 Minutes
+		Wire.write(bin2bcd(hours));		//0x04 Hours
+		Wire.endTransmission();
+	}
 }
 
 /*-----------------------------------------------------------
 setDate (Should be Optimised)
-	* Take Care Century Bit 
-	* Update year logic
 -----------------------------------------------------------*/
 void PCF8563::setDate(uint8_t day, uint8_t month, uint16_t year)
 {
-	uint8_t century, data;
-	
-	// If year is 2 digits.
-	if(year < 100)
-		year = year + 2000;
-	
-	century = year  / 100;	// Find Century 
-	year = year % 100;		//Converting to 2 Digit
+	year = year % 100; //Convert year to 2 Digit
 
-	Wire.beginTransmission(PCF8563_ADDR);
-	Wire.write(0x05);
-	Wire.write(bin2bcd(day));	//0x05 Day
-	Wire.write(0);				//0x06 Weekday
-	Wire.write(bin2bcd(month));	//0x07 Months
-	Wire.write(bin2bcd(year));	//0x08 Years
-	Wire.endTransmission();
-
-	Wire.beginTransmission(PCF8563_ADDR);
-	Wire.write(0x07);		// Century and month Register
-	Wire.endTransmission();
-
-	Wire.requestFrom(PCF8563_ADDR, 1);
-	data = Wire.read();
-
-	// Set century bit to 1 for year > 2000;
-	if(century == 20)
-		bitSet(data,7);
-	else
-		bitClear(data,7);
-
-	// Write Century bit to Month Register(0x07)
-	Wire.beginTransmission(PCF8563_ADDR);
-	Wire.write(0x07);  //
-	Wire.write(data);
-	Wire.endTransmission();
+	setDay(day);
+	setMonth(month);
+	setYear(year);
 }
 
 /*-----------------------------------------------------------

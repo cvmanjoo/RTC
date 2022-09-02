@@ -5,52 +5,54 @@ static PCF8563 RTC;
 
 void setup()
 {
-  Serial.begin(9600);
-  RTC.begin();
-
-  Serial.println();
-    Serial.println("*** RTC PCF8563 ***");
-  Serial.print("Is Clock Running : ");
-  if (RTC.isRunning())
-    Serial.println("Yes");
-  else
-    Serial.println("No");
-
-  Serial.print("Alarm Enabled  : ");
-  if (RTC.isAlarmEnabled())
-    Serial.println("Yes");
-  else
-    Serial.println("No");
+    Serial.begin(9600);
+    while (!Serial);
     
-  Serial.print("Alarm Triggered : ");
-  if (RTC.isAlarmTriggered())
-    Serial.println("Yes");
-  else
-    Serial.println("No");
+    RTC.begin();
 
-   Serial.print("Timer Enabled  : ");
-  if (RTC.isTimerEnabled())
-    Serial.println("Yes");
-  else
-    Serial.println("No");
-}
+    Serial.println();
+        Serial.println("*** RTC PCF8563 ***");
+    Serial.print("Is Clock Running : ");
+    if (RTC.isRunning())
+        Serial.println("Yes");
+    else
+        Serial.println("No");
+
+    Serial.print("Alarm Enabled  : ");
+    if (RTC.isAlarmEnabled())
+        Serial.println("Yes");
+    else
+        Serial.println("No");
+        
+    Serial.print("Alarm Triggered : ");
+    if (RTC.isAlarmTriggered())
+        Serial.println("Yes");
+    else
+        Serial.println("No");
+
+    Serial.print("Timer Enabled  : ");
+    if (RTC.isTimerEnabled())
+        Serial.println("Yes");
+    else
+        Serial.println("No");
+    }
 
 void loop()
 {
-  Serial.print(RTC.getDay());
-  Serial.print("-");
-  Serial.print(RTC.getMonth());
-  Serial.print("-");
-  Serial.print(RTC.getYear());
+    Serial.print(RTC.getDay());
+    Serial.print("-");
+    Serial.print(RTC.getMonth());
+    Serial.print("-");
+    Serial.print(RTC.getYear());
 
-  Serial.print(" ");
+    Serial.print(" ");
 
-  Serial.print(RTC.getHours());
-  Serial.print(":");
-  Serial.print(RTC.getMinutes());
-  Serial.print(":");
-  Serial.print(RTC.getSeconds());
-  Serial.println(" ");
+    Serial.print(RTC.getHours());
+    Serial.print(":");
+    Serial.print(RTC.getMinutes());
+    Serial.print(":");
+    Serial.print(RTC.getSeconds());
+    Serial.println(" ");
 
-  delay(1000);
+    delay(1000);
 }

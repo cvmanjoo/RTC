@@ -33,7 +33,11 @@ bool DS3231::isRunning(void)
 	data_f = bitRead(data_f, 7);
 
 	return (!(data_e | data_f));
-	//return 1;
+
+	// if(data_e == 0 && data_f == 0)
+	// 	return true;
+	// else
+	// 	return false;
 }
 
 /*
@@ -51,7 +55,9 @@ void DS3231::startClock(void)
 	Wire.requestFrom(DS3231_ADDR, 1);
 	data = Wire.read();
 
-	bitWrite(data, 7, 0); // Write  OSF Register to 0 to start the clock.
+	//bitWrite(data, 7, 0); // Write  OSF Register to 0 to start the clock.
+
+	bitClear(data,7); // Write  OSF Register to 0 to start the clock.
 
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0E);
@@ -66,7 +72,9 @@ void DS3231::startClock(void)
 	Wire.requestFrom(DS3231_ADDR, 1);
 	data = Wire.read();
 
-	bitWrite(data, 7, 0); // Write  EOSC Register to 0 to start the clock.
+	//bitWrite(data, 7, 0); // Write  EOSC Register to 0 to start the clock.
+
+	bitClear(data,7); // Write  OSF Register to 0 to start the clock.
 
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0F);
@@ -83,7 +91,7 @@ void DS3231::stopClock(void)
 {
 	uint8_t data;
 
-	// Write  OSF Register to 1 to start the clock.
+	// Write  EOSC Register to 1 to diable the Oscillator.
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0E);
 	Wire.endTransmission();
@@ -318,6 +326,26 @@ void DS3231::setWeek(uint8_t week)
 		Wire.beginTransmission(DS3231_ADDR);
 		Wire.write(0x03);  // Week Register
 		Wire.write(week);
+		Wire.endTransmission();
+	}
+}
+
+void DS3231::updateWeek()
+{
+	uint16_t y;
+	uint8_t m, d, weekday;
+	
+	y=getYear();
+	m=getMonth();
+	d=getDay();
+	
+	weekday  = (d += m < 3 ? y-- : y - 2, 23*m/9 + d + 4 + y/4- y/100 + y/400)%7;
+	
+	if (weekday >= 1 && weekday <= 7)
+	{
+		Wire.beginTransmission(DS3231_ADDR);
+		Wire.write(0x03);  // Week Register
+		Wire.write(weekday);
 		Wire.endTransmission();
 	}
 }
@@ -1122,7 +1150,6 @@ void DS3231::clearAlarm1()
 	Wire.write(0x0F);				// Control Register (0Fh)
 	Wire.write(data);               
 	Wire.endTransmission();
-	
 	
 }
 

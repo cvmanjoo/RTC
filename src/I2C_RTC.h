@@ -35,6 +35,11 @@
 #define SQW08kHz 18
 #define SQW32kHz 32
 
+//const char* week_days[7]
+//    = {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN" };
+
+// enum _WEEK_DAYS_
+
 #include <time.h>
 #include <Arduino.h>
 #include <Wire.h>
@@ -75,26 +80,32 @@ class DS1307
         void setMeridiem(uint8_t meridiem);
         uint8_t getMeridiem();
 
-        void setSeconds(uint8_t second);
-        void setMinutes(uint8_t minute);
-        void setHours(uint8_t hour);
-        void setDay(uint8_t day);
-        void setWeek(uint8_t week);
-        void setMonth(uint8_t month);
-        void setYear(uint16_t year);
-
-        void setDate(uint8_t day, uint8_t month, uint16_t year);
-        void setTime(uint8_t hour, uint8_t minute, uint8_t second);
-
-        void setDateTime(char* date, char* time);
-
+        void setSeconds(uint8_t seconds);
         uint8_t getSeconds();
-        uint8_t getMinutes();
-        uint8_t getHours();
+        
+        void setMinutes(uint8_t minutes);
+        uint8_t getMinutes();       
+
+        void setHours(uint8_t hours);
+        uint8_t getHours();       
+
+        void setDay(uint8_t day);
         uint8_t getDay();
+
         uint8_t getWeek();
-        uint8_t getMonth();
-        uint16_t getYear();
+        void setWeek(uint8_t week);
+        void updateWeek();
+
+        void setMonth(uint8_t month);
+        uint8_t getMonth();       
+
+        uint16_t getYear();        
+        void setYear(uint16_t year);
+		
+        void setTime(uint8_t hour, uint8_t minute, uint8_t second);
+        void setDate(uint8_t day, uint8_t month, uint16_t year);
+        
+        void setDateTime(char* date, char* time);
 
         void setEpoch(time_t epoch, bool is_unix_epoch=true);
         time_t getEpoch(bool as_unix_epoch=true);
@@ -143,30 +154,33 @@ class DS3231 {
 		uint8_t getMeridiem();
 
 		void setSeconds(uint8_t second);
+		uint8_t getSeconds();
+
 		void setMinutes(uint8_t minute);
-		void setHours(uint8_t hour);
-		void setDay(uint8_t day);
-		void setMonth(uint8_t month);
-		void setYear(uint16_t year);
+        uint8_t getMinutes();
+
+        void setHours(uint8_t hour);
+		uint8_t getHours();
+
+        void setDay(uint8_t day);
+		uint8_t getDay();
+
+        void setMonth(uint8_t month);
+        uint8_t getMonth();
+
+        void setYear(uint16_t year);
+		uint16_t getYear();
 
 		void setWeek(uint8_t week);
+    	uint8_t getWeek();
+        void updateWeek();
 
 		void setDate(uint8_t day, uint8_t month, uint16_t year);
 		void setTime(uint8_t hour, uint8_t minute, uint8_t second);
+        void setDateTime(char* date, char* time);
 
 		void setEpoch(time_t epoch, bool is_unix_epoch=true);
 		time_t getEpoch(bool as_unix_epoch=true);
-
-		void setDateTime(char* date, char* time);
-
-		uint16_t getYear();
-		uint8_t getMonth();
-		uint8_t getDay();
-		uint8_t getSeconds();
-		uint8_t getMinutes();
-		uint8_t getHours();
-
-		uint8_t getWeek();
 
 		void enableAlarmPin();
 		
@@ -239,25 +253,31 @@ class PCF8563
         uint8_t getMeridiem();
 
         void setSeconds(uint8_t second);
+        uint8_t getSeconds();
+       
         void setMinutes(uint8_t minute);
+        uint8_t getMinutes();
+
         void setHours(uint8_t hour);
+        uint8_t getHours();      
+
         void setDay(uint8_t day);
+        uint8_t getDay();
+
         void setWeek(uint8_t week);
+        uint8_t getWeek();
+        void updateWeek();
+
         void setMonth(uint8_t month);
+        uint8_t getMonth();
+
         void setYear(uint16_t year);
+        uint16_t getYear();
 
         void setDate(uint8_t day, uint8_t month, uint16_t year);
         void setTime(uint8_t hour, uint8_t minute, uint8_t second);
 
         void setDateTime(char* date, char* time);
-
-        uint8_t getSeconds();
-        uint8_t getMinutes();
-        uint8_t getHours();
-        uint8_t getDay();
-        uint8_t getWeek();
-        uint8_t getMonth();
-        uint16_t getYear();
 
         void setEpoch(time_t epoch);
         time_t getEpoch();
@@ -311,25 +331,30 @@ class PCF8523
 		uint8_t getMeridiem();
 
         void setSeconds(uint8_t second);
+        uint8_t getSeconds();
+
         void setMinutes(uint8_t minute);
+        uint8_t getMinutes();
+
         void setHours(uint8_t hour);
+        uint8_t getHours();
+
         void setDay(uint8_t day);
+        uint8_t getDay();
+
         void setWeek(uint8_t week);
+        uint8_t getWeek();
+        void updateWeek();
+        
         void setMonth(uint8_t month);
+        uint8_t getMonth();
+
         void setYear(uint16_t year);
+        uint16_t getYear();
 
         void setDate(uint8_t day, uint8_t month, uint16_t year);
         void setTime(uint8_t hour, uint8_t minute, uint8_t second);
-
         void setDateTime(char* date, char* time);
-
-        uint8_t getSeconds();
-        uint8_t getMinutes();
-        uint8_t getHours();
-        uint8_t getDay();
-        uint8_t getWeek();
-        uint8_t getMonth();
-        uint16_t getYear();
 
         void setEpoch(time_t epoch);
         time_t getEpoch();

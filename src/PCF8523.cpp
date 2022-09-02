@@ -298,6 +298,28 @@ void PCF8523::setWeek(uint8_t week)
 	Wire.endTransmission();
 }
 
+void PCF8523::updateWeek()
+{
+	uint16_t y;
+	uint8_t m, d, weekday;
+	
+	y=getYear();
+	m=getMonth();
+	d=getDay();
+	
+	weekday  = (d += m < 3 ? y-- : y - 2, 23*m/9 + d + 4 + y/4- y/100 + y/400)%7;
+
+	if (weekday >= 1 && weekday <= 7)
+	{
+		Wire.beginTransmission(PCF8523_ADDR);
+		Wire.write(0x07);  // Week Register
+		Wire.write(weekday-1);
+		Wire.endTransmission();
+	}
+}
+
+
+
 /*-----------------------------------------------------------
 getDay
 -----------------------------------------------------------*/

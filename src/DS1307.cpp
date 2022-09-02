@@ -12,7 +12,7 @@
 bool DS1307::begin()
 {
 	Wire.begin(); // join i2c bus
-	Wire.beginTransmission(0x68);
+	Wire.beginTransmission(DS1307_ADDR);
 	return (Wire.endTransmission() == 0 ? true : false);
 }
 
@@ -150,14 +150,15 @@ get & set Second
 -----------------------------------------------------------*/
 uint8_t DS1307::getSeconds()
 {
-	uint8_t second;
+	uint8_t seconds;
 	Wire.beginTransmission(DS1307_ADDR);
 	Wire.write(0x00);
 	Wire.endTransmission();
+	
 	Wire.requestFrom(DS1307_ADDR, 1);
-	second = Wire.read();
-	bitClear(second, 7); // Clearing CH Bit if Set.
-	return (bcd2bin(second));
+	seconds = Wire.read();
+	bitClear(seconds, 7); // Clearing CH Bit if Set.
+	return (bcd2bin(seconds));
 }
 
 void DS1307::setSeconds(uint8_t seconds)
@@ -175,8 +176,6 @@ void DS1307::setSeconds(uint8_t seconds)
 		seconds = bin2bcd(seconds);
 		bitWrite(seconds,7,ch_bit);
 
-		
-		seconds = ch_bit | seconds;
 		Wire.beginTransmission(DS1307_ADDR);
 		Wire.write(0x00);  // Second Register
 		Wire.write(bin2bcd(seconds));
@@ -294,6 +293,27 @@ void DS1307::setWeek(uint8_t week)
 	}
 }
 
+void DS1307::updateWeek()
+{
+	uint16_t y;
+	uint8_t m, d, weekday;
+	
+	y=getYear();
+	m=getMonth();
+	d=getDay();
+	
+	weekday  = (d += m < 3 ? y-- : y - 2, 23*m/9 + d + 4 + y/4- y/100 + y/400)%7;
+	
+	if (weekday >= 1 && weekday <= 7)
+	{
+		Wire.beginTransmission(DS1307_ADDR);
+		Wire.write(0x03);  // Week Register
+		Wire.write(weekday);
+		Wire.endTransmission();
+	}
+}
+
+
 /*-----------------------------------------------------------
 getDay
 -----------------------------------------------------------*/
@@ -325,12 +345,14 @@ getMonth()
 uint8_t DS1307::getMonth()
 {
 	uint8_t month;
+
 	Wire.beginTransmission(DS1307_ADDR);
 	Wire.write(0x05);  // Month Register
 	Wire.endTransmission();
 
 	Wire.requestFrom(DS1307_ADDR, 1);
 	month = Wire.read();
+
 	return (bcd2bin(month));
 }
 /*-----------------------------------------------------------
@@ -339,10 +361,13 @@ setMonth()
 
 void DS1307::setMonth(uint8_t month)
 {
-	Wire.beginTransmission(DS1307_ADDR);
-	Wire.write(0x05);  // Month Register
-	Wire.write(bin2bcd(month));
-	Wire.endTransmission();
+	if (month >= 1 && month <= 12)
+	{
+		Wire.beginTransmission(DS1307_ADDR);
+		Wire.write(0x05);  // Month Register
+		Wire.write(bin2bcd(month));
+		Wire.endTransmission();
+	}
 }
 
 /*-----------------------------------------------------------
@@ -420,6 +445,7 @@ setDate
 -----------------------------------------------------------*/
 void DS1307::setDate(uint8_t day, uint8_t month, uint16_t year)
 {
+	if(day >= 1 && day <= 31 && month >= 1 && month <= 12 && ((year >= 00 && year <= 99) || (year >= 2000 && year <= 2099)))
 
 	year = year % 100; //Convert year to 2 Digit
 	Wire.beginTransmission(DS1307_ADDR);
@@ -510,6 +536,59 @@ time_t DS1307::getEpoch(bool as_unix_epoch)
 	return (epoch);
 }
 
+/* SQW/OUT pin functions */
+
+void DS1307::setOutPin(uint8_t mode)
+{
+	Wire.beginTransmission(DS1307_ADDR);
+	Wire.write(0x07);
+	switch (mode) {
+	case HIGH:
+		Wire.write(B10000000);
+		break;
+	case LOW:
+		Wire.write(B00000000);
+		break;
+	case SQW001Hz:
+		Wire.write(B00010000);
+		break;
+	case SQW04kHz:
+		Wire.write(B00010001);
+		break;
+	case SQW08kHz:
+		Wire.write(B00010010);
+		break;
+	case SQW32kHz:
+		Wire.write(B00010011);
+		break;
+	}
+	Wire.endTransmission();
+}
+
+bool DS1307::isOutPinEnabled()
+{
+	uint8_t data;
+	Wire.beginTransmission(DS1307_ADDR);
+	Wire.write(0x07);
+	Wire.endTransmission();
+	Wire.requestFrom(DS1307_ADDR, 1);
+	data = Wire.read();
+	data = bitRead(data, 7);
+	return (data);
+}
+
+bool DS1307::isSqweEnabled()
+{
+	uint8_t data;
+	Wire.beginTransmission(DS1307_ADDR);
+	Wire.write(0x07);
+	Wire.endTransmission();
+	Wire.requestFrom(DS1307_ADDR, 1);
+	data = Wire.read();
+	data = bitRead(data, 4);
+	return (data);
+}
+
 /* NVRAM Functions */
 
 bool NVRAM::begin()
@@ -563,59 +642,6 @@ void NVRAM::write(uint8_t address, uint8_t* buf, uint8_t size)
 		Wire.write(buf[pos]);
 	}
 	Wire.endTransmission();
-}
-
-/* SQW/OUT pin functions */
-
-void DS1307::setOutPin(uint8_t mode)
-{
-	Wire.beginTransmission(DS1307_ADDR);
-	Wire.write(0x07);
-	switch (mode) {
-	case HIGH:
-		Wire.write(B10000000);
-		break;
-	case LOW:
-		Wire.write(B00000000);
-		break;
-	case SQW001Hz:
-		Wire.write(B00010000);
-		break;
-	case SQW04kHz:
-		Wire.write(B00010001);
-		break;
-	case SQW08kHz:
-		Wire.write(B00010010);
-		break;
-	case SQW32kHz:
-		Wire.write(B00010011);
-		break;
-	}
-	Wire.endTransmission();
-}
-
-bool DS1307::isOutPinEnabled()
-{
-	uint8_t data;
-	Wire.beginTransmission(DS1307_ADDR);
-	Wire.write(0x07);
-	Wire.endTransmission();
-	Wire.requestFrom(DS1307_ADDR, 1);
-	data = Wire.read();
-	data = bitRead(data, 7);
-	return (data);
-}
-
-bool DS1307::isSqweEnabled()
-{
-	uint8_t data;
-	Wire.beginTransmission(DS1307_ADDR);
-	Wire.write(0x07);
-	Wire.endTransmission();
-	Wire.requestFrom(DS1307_ADDR, 1);
-	data = Wire.read();
-	data = bitRead(data, 4);
-	return (data);
 }
 
 /* Helpers */
