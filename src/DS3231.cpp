@@ -759,7 +759,7 @@ void DS3231::enableAlarmPin()
 	uint8_t reg;
 
 	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x0E);  // Hour Register
+	Wire.write(0x0E);  // Control Register (0Eh)
 	Wire.endTransmission();
 
 	Wire.requestFrom(DS3231_ADDR, 1);
@@ -768,7 +768,7 @@ void DS3231::enableAlarmPin()
 	bitWrite(reg, 2, 1); // Write bit INTCN to 1 to enable INT/SQW pin
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0E);  // Month Register
-	Wire.write(bin2bcd(reg));
+	Wire.write(reg);
 	Wire.endTransmission();
 }
 
@@ -784,7 +784,7 @@ void DS3231::enableAlarm1()
 	bitWrite(data, 0, 1);             // Write  A1IE Register to 1 to enable Alarm 1
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0E);               // Control Register (0Eh)
-	Wire.write(bin2bcd(data));
+	Wire.write(data);
 	Wire.endTransmission();
 
 	Wire.beginTransmission(DS3231_ADDR);
@@ -795,7 +795,7 @@ void DS3231::enableAlarm1()
 	bitWrite(data, 0, 0);             // Write  A1F Register to 0 to clear Alaram 1 flag
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0F);               // Control Register (0Fh)
-	Wire.write(bin2bcd(data));
+	Wire.write(data);
 	Wire.endTransmission();
 }
 
@@ -811,7 +811,7 @@ void DS3231::enableAlarm2()
 	bitWrite(data, 1, 1);             // Write  A2IE Register to 1 to enable Alarm 2
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0E);               // Control Register (0Eh)
-	Wire.write(bin2bcd(data));
+	Wire.write(data);
 	Wire.endTransmission();
 
 	Wire.beginTransmission(DS3231_ADDR);
@@ -822,7 +822,7 @@ void DS3231::enableAlarm2()
 	bitWrite(data, 1, 0);             // Write  A2F Register to 0 to clear Alaram 2 flag
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0F);               // Control Register (0Fh)
-	Wire.write(bin2bcd(data));
+	Wire.write(data);
 	Wire.endTransmission();
 }
 
@@ -838,7 +838,7 @@ void DS3231::disableAlarm1()
 	bitWrite(data, 0, 0);             // Write  A1IE Register to 0 to disable Alarm 1
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0E);               // Control Register (0Eh)
-	Wire.write(bin2bcd(data));
+	Wire.write(data);
 	Wire.endTransmission();
 
 	Wire.beginTransmission(DS3231_ADDR);
@@ -849,7 +849,7 @@ void DS3231::disableAlarm1()
 	bitWrite(data, 0, 0);             // Write  A1F Register to 0 to clear Alarm 1 flag
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0F);               // Control Register (0Fh)
-	Wire.write(bin2bcd(data));
+	Wire.write(data);
 	Wire.endTransmission();
 }
 
@@ -865,7 +865,7 @@ void DS3231::disableAlarm2()
 	bitWrite(data, 1, 0);             // Write  A1IE Register to 0 to disable Alarm 2
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0E);               // Control Register (0Eh)
-	Wire.write(bin2bcd(data));
+	Wire.write(data);
 	Wire.endTransmission();
 
 	Wire.beginTransmission(DS3231_ADDR);
@@ -876,7 +876,7 @@ void DS3231::disableAlarm2()
 	bitWrite(data, 1, 0);             // Write  A1F Register to 0 to clear Alarm 2 flag
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0F);               // Control Register (0Fh)
-	Wire.write(bin2bcd(data));
+	Wire.write(data);
 	Wire.endTransmission();
 }
 
@@ -1231,7 +1231,7 @@ void DS3231::enableSqwePin()
 	bitWrite(reg, 2, 0);
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x0E);  
-	Wire.write(bin2bcd(reg));
+	Wire.write(reg);
 	Wire.endTransmission();
 }
 
