@@ -273,6 +273,7 @@ uint8_t DS3231::getHours()
 void  DS3231::setHours(uint8_t hours)
 {
 	bool h_mode;
+	bool pm;
 	if (hours >= 00 && hours <= 23)
 	{
 		h_mode = getHourMode();
@@ -285,21 +286,13 @@ void  DS3231::setHours(uint8_t hours)
 		}
 		else if (h_mode == CLOCK_H12)
 		{
-			if (hours > 12)
-			{
-				hours = hours % 12;
-				hours = bin2bcd(hours);
-				bitSet(hours, 6);
-				bitSet(hours, 5);
-				Wire.write(hours);
-			}
-			else
-			{
-				hours = bin2bcd(hours);
-				bitSet(hours, 6);
-				bitClear(hours, 5);
-				Wire.write(hours);
-			}
+			pm = (hours >= 12);
+			if (hours == 0) hours = 12;
+			if (hours > 12) hours -= 12;
+			hours = bin2bcd(hours);
+			bitWrite(hours, 5, pm);
+			bitSet(hours, 6);
+			Wire.write(hours);
 		}
 		Wire.endTransmission();
 	}
@@ -514,6 +507,7 @@ void DS3231::setTime(uint8_t hours, uint8_t minutes, uint8_t seconds)
 	if (hours >= 00 && hours <= 23 && minutes >= 00 && minutes <= 59 && seconds >= 00 && seconds <= 59)
 	{
 		bool h_mode;
+		bool pm;
 		h_mode = getHourMode();
 
 		Wire.beginTransmission(DS3231_ADDR);
@@ -526,21 +520,13 @@ void DS3231::setTime(uint8_t hours, uint8_t minutes, uint8_t seconds)
 		}
 		else if (h_mode == CLOCK_H12)
 		{
-			if (hours > 12)
-			{
-				hours = hours % 12;
-				hours = bin2bcd(hours);
-				bitSet(hours, 6);
-				bitSet(hours, 5);
-				Wire.write(hours);	// 0x02
-			}
-			else
-			{
-				hours = bin2bcd(hours);
-				bitSet(hours, 6);
-				bitClear(hours, 5);
-				Wire.write(hours);	// 0x02
-			}
+			pm = (hours >= 12);
+			if (hours == 0) hours = 12;
+			if (hours > 12) hours -= 12;
+			hours = bin2bcd(hours);
+			bitWrite(hours, 5, pm);
+			bitSet(hours, 6);
+			Wire.write(hours);
 		}
 		Wire.endTransmission();
 	}
