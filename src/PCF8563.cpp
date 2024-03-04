@@ -736,18 +736,20 @@ bool PCF8563::isTimerEnabled(void)
 
 void PCF8563::enableTimer(void)
 {
-    uint8_t data;
+    uint8_t reg_0e;
     Wire.beginTransmission(PCF8563_ADDR);
     Wire.write(0x0E);
     Wire.endTransmission();
 
     Wire.requestFrom(PCF8563_ADDR, 1);
-    data = Wire.read();
-    bitSet(data,7);
+    reg_0e = Wire.read();
+    bitSet(reg_0e,7);
+	bitSet(reg_0e,1);
+	bitClear(reg_0e,0);
 
     Wire.beginTransmission(PCF8563_ADDR);
     Wire.write(0x0E);
-    Wire.write(data);
+    Wire.write(reg_0e);
     Wire.endTransmission();
 }
 
@@ -768,6 +770,43 @@ void PCF8563::disableTimer(void)
     Wire.endTransmission();
 }
 
+void PCF8563::enableTimerInterrupt(void)
+{
+    uint8_t reg_01;
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x01);
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    reg_01 = Wire.read();
+    bitSet(reg_01,0);
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x01);
+    Wire.write(reg_01);
+    Wire.endTransmission();
+}
+
+void PCF8563::disableTimerInterrupt(void)
+{
+    uint8_t reg_01;
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x01);
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    reg_01 = Wire.read();
+    bitClear(reg_01,0);
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x01);
+    Wire.write(reg_01);
+    Wire.endTransmission();
+}
+
+
+
+
 void PCF8563::setTimer(uint8_t t_seconds)
 {
     Wire.beginTransmission(PCF8563_ADDR);
@@ -787,6 +826,40 @@ uint8_t PCF8563::getTimer(void)
     Wire.requestFrom(PCF8563_ADDR, 1);
     t_seconds = Wire.read();
     return (t_seconds);
+}
+
+bool PCF8563::getTimerFlag()
+{
+    uint8_t reg_01;
+	bool flag;
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x01);
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    reg_01 = Wire.read();
+
+	flag = bitRead(reg_01,2);
+    return (flag);
+}
+void PCF8563::clearTimerFlag()
+{
+	uint8_t reg_01;
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x01);
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    reg_01 = Wire.read();
+
+    bitClear(reg_01,2);
+
+	Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x01);
+	Wire.write(reg_01);
+    Wire.endTransmission();
 }
 
 

@@ -241,6 +241,10 @@ uint8_t PCF8523::getHours()
 		bitClear(hours, 5);
 		return (bcd2bin(hours));
 	}
+		else
+	{
+		return 0;
+	}
 }
 
 void  PCF8523::setHours(uint8_t hours)

@@ -231,6 +231,10 @@ uint8_t DS1307::getHours()
 		bitClear(hour, 6);
 		return (bcd2bin(hour));
 	}
+	else
+	{
+		return 0;
+	}
 }
 
 void  DS1307::setHours(uint8_t hours)

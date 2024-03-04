@@ -268,6 +268,10 @@ uint8_t DS3231::getHours()
 		bitClear(hours, 6);
 		return (bcd2bin(hours));
 	}
+	else
+	{
+		return 0;
+	}
 }
 
 void  DS3231::setHours(uint8_t hours)

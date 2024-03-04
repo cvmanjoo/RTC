@@ -15,6 +15,8 @@
 
 #if defined(ARDUINO_ARCH_RP2040)
 #define UNIX_OFFSET 946684800
+#else
+#define UNIX_OFFSET 0
 #endif
 
 //define all the rtc clocks.
@@ -305,6 +307,13 @@ class PCF8563
         void disableTimer();
         void setTimer(uint8_t t_seconds);
         uint8_t getTimer();
+
+        void enableTimerInterrupt(void);
+        void disableTimerInterrupt(void);
+
+
+        bool getTimerFlag();
+        void clearTimerFlag();
 
     private:
         uint8_t bin2bcd (uint8_t val);
