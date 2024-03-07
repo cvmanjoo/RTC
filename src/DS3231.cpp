@@ -270,14 +270,14 @@ uint8_t DS3231::getHours()
 	}
 	else
 	{
-		return 0;
+		return -1;
 	}
 }
 
 void  DS3231::setHours(uint8_t hours)
 {
 	bool h_mode;
-	bool pm;
+	bool pm_flag;
 	if (hours >= 00 && hours <= 23)
 	{
 		h_mode = getHourMode();
@@ -290,11 +290,13 @@ void  DS3231::setHours(uint8_t hours)
 		}
 		else if (h_mode == CLOCK_H12)
 		{
-			pm = (hours >= 12);
-			if (hours == 0) hours = 12;
-			if (hours > 12) hours -= 12;
+			pm_flag = (hours >= 12);
+			if (hours == 0)
+				hours = 12;
+			if (hours > 12)
+				hours -= 12;
 			hours = bin2bcd(hours);
-			bitWrite(hours, 5, pm);
+			bitWrite(hours, 5, pm_flag);
 			bitSet(hours, 6);
 			Wire.write(hours);
 		}
