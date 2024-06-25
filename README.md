@@ -4,35 +4,37 @@
 
 This library enables the functionality for clock reading, clock setting, alarms and timers of I2C RTCs.
 
-# DS1307
 
-## Features
-* Real time clock.
-* Non Volatile RAM of 56 bytes.
-* Square wave output.
+| Features | DS1037 | DS3231 | PCF8563 | PCF8623 | MCP7940 |
+|:--------:|:------:|:------:|:-------:|:-------:|:-------:|
+|  Address |  0x68  |  0x68  |   0x51  |   0x68  |  0x6F   |
+| 12 hours |  Yes   |  Yes   |   Yes   |   Yes   |   Yes   |
+|  Alarms  |  0     |  2     |   1     |   0     |    2    |
+|  Timers  |  0     |  0     |   1     |   0     |    0    |
 
-| I2C Address | 0x68 |
-|-------------|------|
 
-# DS3231
 
-## Features
-* Real time clock.
-* 2 Alarms.
-* Temperature Sensor(from -40°C to +85°C).
+# How to Install
 
-| I2C Address | 0x68 |
-|-------------|------|
+Search RTC from Arduino Library
 
-# PCF8563
+![RTC by Manjunath CV](image.png)
 
-## Features
-* Real time clock.
-* 1 Alarm & timer.
-* Programable clock output.
 
-| I2C Address | 0x51 |
-|-------------|------|
+# To Do
+
+* Fix Unix Time Issue
+* Fix Weeks for all RTCs
+* Implement Alarms & Timers for Supported RTCs
+
+# Future
+* DS3232
+* RV-8803-C7
+* SD3031
+
 
 ## Reference & Documentation
 * [RTC Wiki](../../wiki).
+
+
+

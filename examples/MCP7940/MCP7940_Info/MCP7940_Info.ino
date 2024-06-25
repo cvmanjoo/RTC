@@ -1,11 +1,6 @@
-
 #include <Wire.h>
 #include <I2C_RTC.h>
 
-//static DS1307 RTC;
-//static DS3231 RTC;
-//static PCF8523 RTC;
-//static PCF8563 RTC;
 static MCP7940 RTC;
 
 int hours,minutes,seconds,day,month,year;
@@ -13,14 +8,69 @@ int hours,minutes,seconds,day,month,year;
 void setup()
 {
     Serial.begin(9600);
-     while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB
-  }
+    while (!Serial); // wait for serial port to connect. Needed for native USB
+
+/*************************************************
+    RTC.isConnected();
+
+
     
-    Serial.print("Is Clock Running: ");
-    if (RTC.isRunning())
-    {
+    RTC.setWeek(4);
+    RTC.enableExternalBattery();
+    //RTC.disableExternalBattery();
+    
+    Serial.println(RTC.getWeek());
+
+    Serial.println(RTC.showRegister(0x03),BIN);
+
+
+
+
+***************************************************/
+    RTC.enableExternalBattery();
+
+    Serial.println();
+    Serial.println("*** RTC MCP7940 ***");
+
+    Serial.print("Is RTC Connected? : ");
+    if (RTC.isConnected())
         Serial.println("Yes");
+    else
+    {
+        Serial.println("No. Check Connections");
+        while(true);
+    }
+
+    Serial.print("Is External Battery Enabled? : ");
+    if (RTC.isExternalBatteryEnabled())
+        Serial.println("Yes");
+    else
+        Serial.println("No");
+
+    Serial.print("Does Power Failed? : ");
+    if (RTC.doesPowerFailed())
+        Serial.println("Yes");
+    else
+        Serial.println("No");
+
+    Serial.print("Is Clock Running? : ");
+    if (RTC.isRunning())
+        Serial.println("Yes");
+    else
+        Serial.println("No. Time may be Inaccurate");
+
+
+    Serial.print("Hour Mode : ");
+    if (RTC.getHourMode() == CLOCK_H12)
+        Serial.println("12 Hours");
+    else
+        Serial.println("24 Hours");
+}
+
+void loop()
+{
+    //if (RTC.isRunning())
+    {
         switch (RTC.getWeek())
         {
             case 1: Serial.print("SUN");
@@ -87,30 +137,4 @@ void setup()
         Serial.println();
         delay(1000);
     }       
-    else
-    {
-        delay(250);
-
-        Serial.println("No");
-        Serial.println("Setting Time");
-
-        RTC.setHourMode(CLOCK_H12); //Comment if RTC PCF8563
-        //RTC.setHourMode(CLOCK_H24);  
-
-        RTC.setDateTime(__TIMESTAMP__); 
-        //RTC.setDateTime(__DATE__, __TIME__);
-
-        Serial.println("New Time Set");
-        Serial.print(__TIMESTAMP__);
-
-        //Serial.print(__DATE__);
-        //Serial.print(" ");
-        //Serial.println(__TIME__);
-
-        RTC.startClock(); //Start the Clock;
-    }
-}
-
-void loop()
-{
 }

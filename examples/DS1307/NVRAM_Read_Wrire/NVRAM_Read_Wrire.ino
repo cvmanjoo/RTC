@@ -8,7 +8,6 @@ uint8_t address = 0,data = 0;
 void setup()
 {
     Serial.begin(9600);
-
     while (!Serial) {
         ; // wait for serial port to connect. Needed for native USB port only
     }
@@ -19,14 +18,16 @@ void setup()
         while(true);
     }
 
-    for (address = 0; address < NVRAM.length(); address ++)
-    {
-      NVRAM.write(address, 0xFF);
-    }
-    Serial.println("\nNVRAM Cleared!");
+
+    NVRAM.write(37,0xAB);
+	
+	Serial.print("Function Read : ");
+    Serial.println(NVRAM.read(37),HEX);
+	Serial.print("Operatot Read : ");
+    Serial.println(NVRAM[37],HEX);
+
 }
 void loop()
 {
 
 }
-

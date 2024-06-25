@@ -10,11 +10,11 @@ void setup()
     Serial.begin(9600);
     NVRAM.begin();
 
-   // char Str1[10] = "Manjunath";
-    //char Str2[10] = "";
-    //    NVRAM.read(18,Str2,9);
+   char Str1[10] = "Manjunath";
+   char Str2[10] = "";
+   NVRAM.read(18,Str2,9);
 
-   // Serial.println(Str2);
+   Serial.println(Str2);
 
 
     uint8_t writeData[4] = { 0xBE, 0xEF, 0x01, 0x02 };

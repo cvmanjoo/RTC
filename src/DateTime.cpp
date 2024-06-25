@@ -7,6 +7,7 @@
 #include <time.h>
 #include <I2C_RTC.h>
 
+/*
 DateTime::DateTime()
 {
 	year=2000;
@@ -16,11 +17,13 @@ DateTime::DateTime()
 	minutes=0;
 	seconds=0;
 	week = 0;
-}
+	meridiem = HOUR_24;
+};
 
-DateTime::DateTime(uint8_t hour, uint8_t min, uint8_t sec)
+
+DateTime::DateTime(uint8_t hour, uint8_t min, uint8_t sec, bool merid)
 {
-	if(hour >= 23 && min >= 59 && sec >= 59)
+	if(hour <= 23 && min <= 59 && sec <= 59)
 	{
 		year=2000;
 		month=1;
@@ -29,6 +32,7 @@ DateTime::DateTime(uint8_t hour, uint8_t min, uint8_t sec)
 		minutes=min;
 		seconds=sec;	
 		week = 0;
+		meridiem = merid;
 	}
 }
 
@@ -47,3 +51,4 @@ DateTime::DateTime(uint16_t y, uint8_t mon, uint8_t d, uint8_t hour, uint8_t min
 	}
 }
 
+*/

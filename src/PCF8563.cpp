@@ -15,6 +15,7 @@
 bool PCF8563::begin()
 {
     Wire.begin(); // join i2c bus
+	//Wire.setClock(400000); //Optional - set I2C SCL to Low Speed Mode of 400kHz
     Wire.beginTransmission (PCF8563_ADDR);
     return (Wire.endTransmission() == 0 ?  true : false);
 }
@@ -559,6 +560,118 @@ time_t PCF8563::getEpoch()
 /*-----------------------------------------------------------
 Alarm Functions
 -----------------------------------------------------------*/
+void PCF8563::setAlarmMinutes(uint8_t minutes)
+{	if (minutes >= 00 && minutes <= 59)
+	{
+		Wire.beginTransmission(PCF8563_ADDR);
+		Wire.write(0x09);
+		Wire.write(bin2bcd(minutes));
+		Wire.endTransmission();
+	}
+}
+
+void PCF8563::setAlarmHours(uint8_t hours)
+{
+	if (hours >= 00 && hours <= 23)
+	{
+		Wire.beginTransmission(PCF8563_ADDR);
+		Wire.write(0x0A);
+		Wire.write(bin2bcd(hours));
+		Wire.endTransmission();
+	}
+}
+
+void PCF8563::setAlarmDay(uint8_t day)
+{
+	if (day >= 1 && day <= 31)
+	{
+		Wire.beginTransmission(PCF8563_ADDR);
+		Wire.write(0x0B);
+		Wire.write(bin2bcd(day));
+		Wire.endTransmission();
+	}
+}
+void PCF8563::setAlarmWeek(uint8_t week)
+{
+	if (week >= 1 && week <= 7)
+	{
+		Wire.beginTransmission(PCF8563_ADDR);
+		Wire.write(0x0C);
+		Wire.write(bin2bcd(week));
+		Wire.endTransmission();
+	}
+}
+
+uint8_t PCF8563::getAlarmMinutes()
+{
+	uint8_t minutes;
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x09);
+    Wire.endTransmission();
+    Wire.requestFrom(PCF8563_ADDR, 4);
+    
+	minutes = Wire.read();
+	bitClear(minutes,7);
+	minutes = bcd2bin(minutes);
+
+	return (minutes);
+}
+
+
+uint8_t PCF8563::getAlarmHours()
+{
+	uint8_t hours;
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0A);
+    Wire.endTransmission();
+    Wire.requestFrom(PCF8563_ADDR, 4);
+
+	hours = Wire.read();
+	bitClear(hours,7);
+	hours = bcd2bin(hours);
+
+	return hours;
+
+
+}
+
+uint8_t PCF8563::getAlarmDay()
+{
+	uint8_t day;
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0B);
+    Wire.endTransmission();
+    Wire.requestFrom(PCF8563_ADDR, 4);
+
+	day = Wire.read();
+	bitClear(day,7);
+	day = bcd2bin(day);
+
+	return(day);
+}
+
+uint8_t PCF8563::getAlarmWeek()
+{
+	uint8_t week;
+
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x0C);
+    Wire.endTransmission();
+    Wire.requestFrom(PCF8563_ADDR, 4);
+    
+
+
+	week = Wire.read();
+	bitClear(week,7);
+	week = bcd2bin(week);
+
+	return(week);
+}
+
 
 /*-----------------------------------------------------------
 void disableAlarm()
@@ -590,60 +703,6 @@ void PCF8563::disableAlarm()
     Wire.write(weekday);
     Wire.endTransmission();
 }
-
-void PCF8563::setAlarm(uint8_t hours, uint8_t minutes)
-{
-	Wire.beginTransmission(PCF8563_ADDR);
-	Wire.write(0x09);
-	Wire.write(bin2bcd(minutes));
-	Wire.write(bin2bcd(hours));
-	Wire.write(0x80);
-	Wire.write(0x80);
-	Wire.endTransmission();
-}
-
-void PCF8563::setAlarm(uint8_t week,uint8_t day, uint8_t hours, uint8_t minutes)
-{
-	Wire.beginTransmission(PCF8563_ADDR);
-	Wire.write(0x09);
-	Wire.write(bin2bcd(minutes));
-	Wire.write(bin2bcd(hours));
-	Wire.write(bin2bcd(day));
-	Wire.write(bin2bcd(week));
-	Wire.endTransmission();
-}
-
-
-DateTime PCF8563::getAlarm()
-{
-	uint8_t hours, minutes, day, week;
-	DateTime Alarm;
-
-    Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x09);
-    Wire.endTransmission();
-    Wire.requestFrom(PCF8563_ADDR, 4);
-    
-	minutes = Wire.read();
-	bitClear(minutes,7);
-	Alarm.minutes = bcd2bin(minutes);
-
-	hours = Wire.read();
-	bitClear(hours,7);
-	Alarm.hours = bcd2bin(hours);
-	
-	day = Wire.read();
-	bitClear(day,7);
-	Alarm.day = bcd2bin(day);
-
-	week = Wire.read();
-	bitClear(week,7);
-	Alarm.week = bcd2bin(week);
-
-	return(Alarm);
-}
-
-
 
 
 /*-----------------------------------------------------------
@@ -710,6 +769,41 @@ bool PCF8563::isAlarmEnabled(void)
         return false;
     else
         return true;
+}
+
+
+void PCF8563::enableAlarmInterrupt(void)
+{
+    uint8_t reg_01;
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x01);
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    reg_01 = Wire.read();
+    bitSet(reg_01,1);
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x01);
+    Wire.write(reg_01);
+    Wire.endTransmission();
+}
+
+void PCF8563::disableAlarmInterrupt(void)
+{
+    uint8_t reg_01;
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x01);
+    Wire.endTransmission();
+
+    Wire.requestFrom(PCF8563_ADDR, 1);
+    reg_01 = Wire.read();
+    bitClear(reg_01,1);
+
+    Wire.beginTransmission(PCF8563_ADDR);
+    Wire.write(0x01);
+    Wire.write(reg_01);
+    Wire.endTransmission();
 }
 
 /*-----------------------------------------------------------
@@ -843,6 +937,7 @@ bool PCF8563::getTimerFlag()
 	flag = bitRead(reg_01,2);
     return (flag);
 }
+
 void PCF8563::clearTimerFlag()
 {
 	uint8_t reg_01;
@@ -863,13 +958,41 @@ void PCF8563::clearTimerFlag()
 }
 
 
-/* Helpers */
+/**************************************************************
+ * 
+ * Private Functions
+ *  
+**************************************************************/
 
-uint8_t PCF8563::bcd2bin (uint8_t val)
+
+uint8_t PCF8563::_read_one_register(uint8_t reg_address)
 {
-    return val - 6 * (val >> 4);
+    uint8_t reg_data;
+    
+    Wire.beginTransmission(_i2c_address);
+    Wire.write(reg_address);
+    Wire.endTransmission();
+
+    Wire.requestFrom((int)_i2c_address,(int) 1);
+    reg_data = Wire.read();
+    return(reg_data);
+
 }
-uint8_t PCF8563::bin2bcd (uint8_t val)
+
+void PCF8563::_write_one_register(uint8_t reg_address, uint8_t reg_data)
 {
-    return val + 6 * (val / 10);
+    Wire.beginTransmission(_i2c_address);
+    Wire.write(reg_address);
+    Wire.write(reg_data);
+    Wire.endTransmission();
+}
+
+uint8_t PCF8563::bcd2bin(uint8_t val)
+{
+	return val - 6 * (val >> 4);
+}
+
+uint8_t PCF8563::bin2bcd(uint8_t val)
+{
+	return val + 6 * (val / 10);
 }

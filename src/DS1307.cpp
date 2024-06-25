@@ -214,8 +214,8 @@ getHours
 uint8_t DS1307::getHours()
 {
 	uint8_t hour;
-	bool h_mode;
-	h_mode = getHourMode();
+	bool h_mode = getHourMode();
+	
 	Wire.beginTransmission(DS1307_ADDR);
 	Wire.write(0x02);  // Hour Register
 	Wire.endTransmission();
@@ -493,6 +493,50 @@ void DS1307::setDateTime(char* date, char* time)
 	setSeconds(second);
 }
 
+void DS1307::setDateTime(String timestamp)
+{
+	uint8_t day, month, hour, minute, second, week;
+	uint16_t year;
+	String month_str, week_str;
+	
+	week_str = timestamp.substring(0,3);
+	month_str = timestamp.substring(4,7);
+	day = timestamp.substring(8,11).toInt();
+	hour = timestamp.substring(11,13).toInt();
+	minute = timestamp.substring(14,16).toInt();
+	second = timestamp.substring(17,19).toInt();
+	year = timestamp.substring(20,24).toInt();
+
+	switch (week_str[0]) {
+	case 'S': week = week_str[1] == 'u' ? 1 : 7; break;
+	case 'M': week = 2; break;
+	case 'T': week = week_str[1] == 'u' ? 3 : 5; break;
+	case 'W': week = 4; break;
+	case 'F': week = 6; break;
+	}
+
+	switch (month_str[0]) {
+	case 'J': month = (month_str[1] == 'a') ? 1 : ((month_str[2] == 'n') ? 6 : 7); break;
+	case 'F': month = 2; break;
+	case 'A': month = month_str[2] == 'r' ? 4 : 8; break;
+	case 'M': month = month_str[2] == 'r' ? 3 : 5; break;
+	case 'S': month = 9; break;
+	case 'O': month = 10; break;
+	case 'N': month = 11; break;
+	case 'D': month = 12; break;
+	}
+
+	setWeek(week);
+	
+	setDay(day);
+	setMonth(month);
+	setYear(year);
+
+	setHours(hour);
+	setMinutes(minute);
+	setSeconds(second);
+}
+
 /*-----------------------------------------------------------
 setEpoch()
 -----------------------------------------------------------*/
@@ -548,22 +592,22 @@ void DS1307::setOutPin(uint8_t mode)
 	Wire.write(0x07);
 	switch (mode) {
 	case HIGH:
-		Wire.write(B10000000);
+		Wire.write(0b10000000);
 		break;
 	case LOW:
-		Wire.write(B00000000);
+		Wire.write(0b00000000);
 		break;
 	case SQW001Hz:
-		Wire.write(B00010000);
+		Wire.write(0b00010000);
 		break;
 	case SQW04kHz:
-		Wire.write(B00010001);
+		Wire.write(0b0010001);
 		break;
 	case SQW08kHz:
-		Wire.write(B00010010);
+		Wire.write(0b0010010);
 		break;
 	case SQW32kHz:
-		Wire.write(B00010011);
+		Wire.write(0b0010011);
 		break;
 	}
 	Wire.endTransmission();
@@ -606,22 +650,63 @@ bool NVRAM::begin()
 uint8_t NVRAM::read(uint8_t address)
 {
 	uint8_t data = 0x00;
-	address = (address % length) + 0x08;
-	Wire.beginTransmission(DS1307_ADDR);
-	Wire.write(address);
-	Wire.endTransmission();
-	Wire.requestFrom(DS1307_ADDR, 1);
-	data = Wire.read();
+	if(address >= 1 or address <=56 )
+	{
+		address = (address % length()) + 0x08;
+		Wire.beginTransmission(DS1307_ADDR);
+		Wire.write(address);
+		Wire.endTransmission();
+		Wire.requestFrom(DS1307_ADDR, 1);
+		data = Wire.read();
+	}
 	return (data);
 }
 void NVRAM::write(uint8_t address, uint8_t data)
 {
-	address = (address % length) + 0x08;
-	Wire.beginTransmission(DS1307_ADDR);
-	Wire.write(address);
-	Wire.write(data);
-	Wire.endTransmission();
+	if(address >= 1 or address <=56 )
+	{
+		address = address + 0x08;
+		Wire.beginTransmission(DS1307_ADDR);
+		Wire.write(address);
+		Wire.write(data);
+		Wire.endTransmission();
+	}
 }
+
+/*Operator [] Read function*/
+uint8_t NVRAM::operator[](uint8_t address) const
+{
+
+	uint8_t data = 0x00;
+	if(address >= 1 or address <=56 )
+	{
+		//Serial.print("address = ");
+		//Serial.println(address);
+		address = (address % _length) + 0x08;
+		Wire.beginTransmission(DS1307_ADDR);
+		Wire.write(address);
+		Wire.endTransmission();
+		Wire.requestFrom(DS1307_ADDR, 1);
+		data = Wire.read();
+	}
+	return (data);
+}
+
+/*Operator [] Write function
+uint8_t& NVRAM::operator[](uint8_t address)
+{
+	//uint8_t data;
+	if(address >= 1 or address <=56 )
+	{
+		address = address + 0x08;
+		Wire.beginTransmission(DS1307_ADDR);
+		Wire.write(address);
+		Wire.write(data);
+		Wire.endTransmission();
+	}
+}
+
+*/
 
 void NVRAM::read(uint8_t address, uint8_t* buf, uint8_t size)
 {
@@ -647,6 +732,12 @@ void NVRAM::write(uint8_t address, uint8_t* buf, uint8_t size)
 	}
 	Wire.endTransmission();
 }
+
+uint8_t NVRAM::length()
+{
+	return(_length);
+}
+
 
 /* Helpers */
 
