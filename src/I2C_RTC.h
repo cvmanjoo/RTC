@@ -1,23 +1,43 @@
-/* ------------------------------------------------------------
- * "THE BEERWARE LICENSE" (Revision 42):
- * <cvmanjoo@gmail.com> wrote this code. As long as you retain this
- * notice, you can do whatever you want with this stuff. If we
- * meet someday, and you think this stuff is worth it, you can
- * buy me a beer in return.
- * ------------------------------------------------------------
- * ------------------------------------------------------------
- * RTC.h - Library to set & get time from I2C RTCs for Arduino
- * Created by Manjunath CV. July 08, 2017, 02:18 AM
- * Released into the public domain.
- * -----------------------------------------------------------*/
+/**************************************************************************
+    Library to set & get time from I2C RTCs for Arduino
+
+    Copyright 2024 Manjunath <cvmanjoo@gmail.com>
+    Website     : http://github.com/cvmanjoo/rtc
+    Author      : Manjunath CV
+    Create Time : July 08, 2017, 02:18 AM
+
+    This is free and unencumbered software released into the public domain.
+
+    Anyone is free to copy, modify, publish, use, compile, sell, or
+    distribute this software, either in source code form or as a compiled
+    binary, for any purpose, commercial or non-commercial, and by any
+    means.
+
+    In jurisdictions that recognize copyright laws, the author or authors
+    of this software dedicate any and all copyright interest in the
+    software to the public domain. We make this dedication for the benefit
+    of the public at large and to the detriment of our heirs and
+    successors. We intend this dedication to be an overt act of
+    relinquishment in perpetuity of all present and future rights to this
+    software under copyright law.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+    OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+    OTHER DEALINGS IN THE SOFTWARE.
+
+    For more information, please refer to <http://unlicense.org>
+    
+ *************************************************************************/
 
 #ifndef RTC_H
 
-//#if defined(ARDUINO_ARCH_RP2040)
+#ifndef UNIX_OFFSET
 #define UNIX_OFFSET 946684800
-//#else
-//#define UNIX_OFFSET 0 // Temp Workaround
-//#endif
+#endif
 
 //define all the rtc clocks.
 //#define DS1307_H
@@ -53,10 +73,13 @@
 class DS1307
 {
     public:
-        bool begin();
+        //DS1307();
 
-        bool isRunning(void);
-        void startClock(void);
+        uint8_t begin();
+        bool isConnected();
+        bool isRunning();
+        
+        void startClock();
         void stopClock();
 
         void setHourMode(uint8_t h_mode);
@@ -90,19 +113,29 @@ class DS1307
         void setTime(uint8_t hour, uint8_t minute, uint8_t second);
         void setDate(uint8_t day, uint8_t month, uint16_t year);
         
-        void setDateTime(char* date, char* time);
+        void setDateTime(String date, String time);
         void setDateTime(String timestamp);
 
-        void setEpoch(time_t epoch, bool is_unix_epoch=true);
-        time_t getEpoch(bool as_unix_epoch=true);
+        tm getDateTime();
+        String getDateTimeString();
+
+        void setEpoch(time_t epoch);
+        time_t getEpoch();
 
         void setOutPin(uint8_t mode);
         bool isOutPinEnabled();
         bool isSqweEnabled();
 
-    private:
-        uint8_t bin2bcd (uint8_t val);
-        uint8_t bcd2bin (uint8_t val);
+	private:
+		uint8_t _i2c_address = DS1307_ADDR;
+
+        uint8_t calculateDayOfWeek(uint8_t d, uint8_t m, uint16_t y);
+
+        uint8_t _read_one_register(uint8_t reg_address);
+        void _write_one_register(uint8_t reg_address, uint8_t reg_data);
+
+		uint8_t bin2bcd(uint8_t val);
+		uint8_t bcd2bin(uint8_t val);
 };
 
 class NVRAM
@@ -134,7 +167,7 @@ class NVRAM
 class DS3231 {
 
     public:
-        bool begin();
+        bool isConnected();
 
         bool isRunning();
         void startClock();
@@ -229,8 +262,13 @@ class DS3231 {
         float getTemp();
 
     private:
-      uint8_t bin2bcd (uint8_t val);
-      uint8_t bcd2bin (uint8_t val);
+        uint8_t _i2c_address = DS3231_ADDR;
+
+        uint8_t bin2bcd(uint8_t val);
+        uint8_t bcd2bin(uint8_t val);
+        
+        uint8_t _read_one_register(uint8_t reg_address);
+        void _write_one_register(uint8_t reg_address, uint8_t reg_data);
 };
 
 /*

@@ -7,10 +7,8 @@ uint8_t address = 0, data = 0;
 
 void setup()
 {
-    Serial.begin(9600);
-    while (!Serial) {
-        ; // wait for serial port to connect. Needed for native USB port only
-    }
+    Serial.begin(115200);
+    while (!Serial); // wait for serial port to connect. Needed for native USB port only
 
     if(NVRAM.begin() == false)
     {

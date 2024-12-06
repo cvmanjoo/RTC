@@ -71,7 +71,6 @@ bool MCP7940::isRunning(void)
    uint8_t reg_data;
    reg_data = _read_one_register(RTCSEC);
    return(bitRead(reg_data,ST));
-   Serial.println(_i2c_address);
 }
 
 void MCP7940::startClock()
@@ -185,7 +184,6 @@ void  MCP7940::setHours(uint8_t hours)
 
     reg_hour = _read_one_register(RTCHOUR);
 	h_mode = bitRead(reg_hour, 6);
-
 
 	if (hours >= 00 && hours <= 23)
 	{
@@ -441,7 +439,7 @@ tm MCP7940::getPowerDownDateTime()
 
     for(int i = 0;i< 4; i++)
     {
-        switch (i)
+        switch (i) 
         {
             case 0: reg_data = Wire.read();
                     power_down_time.tm_min = bcd2bin(reg_data);   
@@ -556,6 +554,8 @@ void MCP7940::_write_one_register(uint8_t reg_address, uint8_t reg_data)
     Wire.endTransmission();
 }
 
+/* Helpers */
+
 uint8_t MCP7940::bcd2bin(uint8_t val)
 {
 	return val - 6 * (val >> 4);
@@ -567,4 +567,3 @@ uint8_t MCP7940::bin2bcd(uint8_t val)
 }
 
 //  -- END OF FILE --
-

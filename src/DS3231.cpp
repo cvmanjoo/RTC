@@ -9,7 +9,7 @@
 #include <Wire.h>
 #include <I2C_RTC.h>
 
-bool DS3231::begin()
+bool DS3231::isConnected()
 {
 	Wire.begin(); // join i2c bus
 	Wire.beginTransmission(0x68);
@@ -37,7 +37,7 @@ bool DS3231::isRunning(void)
 	// if(data_e == 0 && data_f == 0)
 	// 	return true;
 	// else
-	// 	return false;
+	//return false;
 }
 
 /*
@@ -1426,6 +1426,28 @@ float DS3231::getTemp()
 }
 
 /* Helpers */
+
+
+uint8_t DS3231::_read_one_register(uint8_t reg_address)
+{
+    uint8_t reg_data;
+    
+    Wire.beginTransmission(_i2c_address);
+    Wire.write(reg_address);
+    Wire.endTransmission();
+
+    Wire.requestFrom((int)_i2c_address,(int) 1);
+    reg_data = Wire.read();
+    return(reg_data);
+}
+
+void DS3231::_write_one_register(uint8_t reg_address, uint8_t reg_data)
+{
+    Wire.beginTransmission(_i2c_address);
+    Wire.write(reg_address);
+    Wire.write(reg_data);
+    Wire.endTransmission();
+}
 
 uint8_t DS3231::bcd2bin(uint8_t val)
 {

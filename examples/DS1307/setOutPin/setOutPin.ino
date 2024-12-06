@@ -14,10 +14,16 @@ static DS1307 RTC;
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(115200);
+    while (!Serial); // wait for serial port to connect. Needed for native USB port only
     RTC.begin();
+    if(RTC.isConnected() == false)
+    {
+        Serial.println("RTC Not Connected!");
+        while(true);
+    }
 
-    RTC.setOutPin(SQW001Hz);
+    RTC.setOutPin(LOW);
     Serial.print("Done.");
    
 }
