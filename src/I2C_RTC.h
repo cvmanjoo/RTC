@@ -76,6 +76,7 @@ class DS1307
         //DS1307();
 
         uint8_t begin();
+
         bool isConnected();
         bool isRunning();
         
@@ -167,9 +168,11 @@ class NVRAM
 class DS3231 {
 
     public:
+        uint8_t begin();
+        
         bool isConnected();
-
         bool isRunning();
+        
         void startClock();
         void stopClock();
 
