@@ -189,14 +189,15 @@ uint8_t DS1307::getHours()
 
 void  DS1307::setHours(uint8_t hours)
 {
-	bool reg_hour, h_mode;
+	uint8_t reg_hour; 
+	bool h_mode, meridiem;
 
 	reg_hour = _read_one_register(R_HOURS);
 	h_mode = bitRead(reg_hour, 6); //Get hour mode
 
 	if (hours >= 00 && hours <= 23)
 	{
-		h_mode = getHourMode();
+		//h_mode = getHourMode();
 
 		if (h_mode == CLOCK_H24)
 		{
@@ -204,28 +205,15 @@ void  DS1307::setHours(uint8_t hours)
 		}
 		else if (h_mode == CLOCK_H12)
 		{
-			if(hours < 12)
-			{
-				hours = bin2bcd(hours);
-				bitSet(hours, 6);
-				bitClear(hours, 5); //AM
-				_write_one_register(R_HOURS,hours);
-			}
-			else if (hours == 12)
-			{	
-				hours = bin2bcd(hours);
-				bitSet(hours, 6); // Set to 12 Hour mode again					
-				bitSet(hours, 5); // PM
-				_write_one_register(R_HOURS,hours);
-			}
-			else if (hours > 12)
-			{
-				hours = hours % 12;
-				hours = bin2bcd(hours);
-				bitSet(hours, 6); // Set to 12 Hour mode again
-				bitSet(hours, 5); // PM
-				_write_one_register(R_HOURS,hours);
-			}
+			meridiem = (hours >= 12);
+			if (hours == 0)
+				hours = 12;
+			if (hours > 12)
+				hours -= 12;
+			hours = bin2bcd(hours);
+			bitWrite(hours, 5, meridiem);
+			bitSet(hours, 6);
+			_write_one_register(R_HOURS,hours);
 		}
 	}
 }
@@ -388,6 +376,7 @@ void DS1307::setDateTime(String date, String time)
 {
 	uint8_t reg_hours, reg_seconds, h_mode, ch_bit;
 	uint8_t day, month, hours, minutes, seconds, year;
+	bool meridiem;
 
 	reg_hours   = _read_one_register(R_HOURS);
 	reg_seconds = _read_one_register(R_SECONDS);
@@ -430,28 +419,15 @@ void DS1307::setDateTime(String date, String time)
 	}
 	else if (h_mode == CLOCK_H12)
 	{
-		if(hours < 12)
-		{
-			hours = bin2bcd(hours);
-			bitSet(hours, 6);
-			bitClear(hours, 5); //AM
-			Wire.write(hours);
-		}
-		else if (hours == 12)
-		{	
-			hours = bin2bcd(hours);
-			bitSet(hours, 6); // Set to 12 Hour mode again					
-			bitSet(hours, 5); // PM
-			Wire.write(hours);
-		}
-		else if (hours > 12)
-		{
-			hours = hours % 12;
-			hours = bin2bcd(hours);
-			bitSet(hours, 6); // Set to 12 Hour mode again
-			bitSet(hours, 5); // PM
-			Wire.write(hours);
-		}
+		meridiem = (hours >= 12);
+		if (hours == 0)
+			hours = 12;
+		if (hours > 12)
+			hours -= 12;
+		hours = bin2bcd(hours);
+		bitWrite(hours, 5, meridiem);
+		bitSet(hours, 6);
+		Wire.write(hours);
 	}
 	
 	Wire.write(calculateDayOfWeek(day, month, year));
@@ -474,6 +450,7 @@ void DS1307::setDateTime(String timestamp)
 	uint8_t reg_hours, reg_seconds, h_mode, ch_bit;
 	uint8_t day, month, hours, week, minutes, seconds, year;
 	String month_str, week_str;
+	bool meridiem;
 
 	reg_hours   = _read_one_register(R_HOURS);
 	reg_seconds = _read_one_register(R_SECONDS);
@@ -524,36 +501,21 @@ void DS1307::setDateTime(String timestamp)
 	}
 	else if (h_mode == CLOCK_H12)
 	{
-		if(hours < 12)
-		{
-			hours = bin2bcd(hours);
-			bitSet(hours, 6);
-			bitClear(hours, 5); //AM
-			Wire.write(hours);
-		}
-		else if (hours == 12)
-		{	
-			hours = bin2bcd(hours);
-			bitSet(hours, 6); // Set to 12 Hour mode again					
-			bitSet(hours, 5); // PM
-			Wire.write(hours);
-		}
-		else if (hours > 12)
-		{
-			hours = hours % 12;
-			hours = bin2bcd(hours);
-			bitSet(hours, 6); // Set to 12 Hour mode again
-			bitSet(hours, 5); // PM
-			Wire.write(hours);
-		}
+		meridiem = (hours >= 12);
+		if (hours == 0)
+			hours = 12;
+		if (hours > 12)
+			hours -= 12;
+		hours = bin2bcd(hours);
+		bitWrite(hours, 5, meridiem);
+		bitSet(hours, 6);
+		Wire.write(hours);
 	}
-	
 	Wire.write(week);
 	Wire.write(bin2bcd(day));
 	Wire.write(bin2bcd(month));
 	Wire.write(bin2bcd(year));
 	Wire.endTransmission();
-
 }
 
 tm DS1307::getDateTime()
@@ -614,6 +576,7 @@ void DS1307::setEpoch(time_t epoch)
 	struct tm epoch_tm, * ptr_epoch_tm;
 	uint8_t reg_hours, reg_seconds, h_mode, ch_bit;
 	uint8_t day, month, hours, week, minutes, seconds, year;
+	bool meridiem;
 	
 	if(epoch >= UNIX_OFFSET)
 	{
@@ -662,28 +625,15 @@ void DS1307::setEpoch(time_t epoch)
 		}
 		else if (h_mode == CLOCK_H12)
 		{
-			if(hours < 12)
-			{
-				hours = bin2bcd(hours);
-				bitSet(hours, 6);
-				bitClear(hours, 5); //AM
-				Wire.write(hours);
-			}
-			else if (hours == 12)
-			{	
-				hours = bin2bcd(hours);
-				bitSet(hours, 6); // Set to 12 Hour mode again					
-				bitSet(hours, 5); // PM
-				Wire.write(hours);
-			}
-			else if (hours > 12)
-			{
-				hours = hours % 12;
-				hours = bin2bcd(hours);
-				bitSet(hours, 6); // Set to 12 Hour mode again
-				bitSet(hours, 5); // PM
-				Wire.write(hours);
-			}
+			meridiem = (hours >= 12);
+			if (hours == 0)
+				hours = 12;
+			if (hours > 12)
+				hours -= 12;
+			hours = bin2bcd(hours);
+			bitWrite(hours, 5, meridiem);
+			bitSet(hours, 6);
+			Wire.write(hours);
 		}
 		
 		Wire.write(week);
@@ -923,6 +873,127 @@ String DS1307::getDateTimeString()
 		}
 	}
 	return (dateTimeString);
+}
+
+String DS1307::getTimeString()
+{
+   	uint8_t seconds, minutes, hours, meridiem, h_mode;
+	uint16_t year;
+	String timeString;
+
+	Wire.beginTransmission(DS1307_ADDR);
+	Wire.write(R_SECONDS);
+	Wire.endTransmission();
+	Wire.requestFrom(DS1307_ADDR, 3);
+
+	seconds = Wire.read();
+	bitClear(seconds, 3);
+	seconds = bcd2bin(seconds);
+
+	minutes = Wire.read();
+	minutes = bcd2bin(minutes);
+
+	hours = Wire.read();
+	h_mode = bitRead(hours, 6);
+	meridiem = bitRead(hours, 5); 
+	
+	if (h_mode == CLOCK_H24)
+	{
+		hours = bcd2bin(hours);
+	}
+	else //h_mode == CLOCK_H12
+	{
+		bitClear(hours, 5);
+		bitClear(hours, 6);
+		hours = bcd2bin(hours);
+	}
+
+	if(hours<10)
+		timeString.concat("0");
+	timeString.concat(hours);
+	timeString.concat(":");
+	if(minutes<10)
+		timeString.concat("0");
+	timeString.concat(minutes);
+	timeString.concat(":");
+	if(seconds<10)
+		timeString.concat("0");
+	timeString.concat(seconds);
+	if (h_mode == CLOCK_H12)
+	{
+		switch (meridiem)
+		{
+			case HOUR_AM :
+			timeString.concat(" AM");
+			break;
+			case HOUR_PM :
+			timeString.concat(" PM");
+			break;
+		}
+	}
+	return (timeString);
+}
+
+String DS1307::getDateString()
+{
+    uint8_t week, day, month, meridiem, h_mode;
+	uint16_t year;
+	String dateString;
+
+	Wire.beginTransmission(DS1307_ADDR);
+	Wire.write(R_WEEKDAY);
+	Wire.endTransmission();
+	Wire.requestFrom(DS1307_ADDR, 7);
+
+	week = Wire.read();
+	week = week;
+
+	day = Wire.read();
+	day = bcd2bin(day);
+	
+	month = Wire.read();
+ 	month  = bcd2bin(month);
+
+	year = Wire.read();
+	year = bcd2bin(year) + 2000;
+
+	switch (week)
+	{
+	case 1:
+		dateString.concat("SUN");
+		break;
+	case 2:
+		dateString.concat("MON");
+		break;
+	case 3:
+		dateString.concat("TUE");
+		break;
+	case 4:
+		dateString.concat("WED");
+		break;
+	case 5:
+		dateString.concat("THU");
+		break;
+	case 6:
+		dateString.concat("FRI");
+		break;
+	case 7:
+		dateString.concat("SAT");
+		break;
+	}
+	
+	dateString.concat(" ");
+	if(day<10)
+		dateString.concat("0");
+	dateString.concat(day);
+	dateString.concat("-");
+	if(month<10)
+		dateString.concat("0");
+	dateString.concat(month);
+	dateString.concat("-");
+	dateString.concat(year);
+
+	return (dateString);
 }
 
 /* NVRAM Functions */

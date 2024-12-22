@@ -119,6 +119,9 @@ class DS1307
 
         tm getDateTime();
         String getDateTimeString();
+        String getTimeString();
+        String getDateString();
+       
 
         void setEpoch(time_t epoch);
         time_t getEpoch();
