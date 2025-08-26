@@ -11,7 +11,7 @@ static DS1307 RTC;
 
 void setup()
 {
-	Serial.begin(9600);
+	Serial.begin(115200);
 	while (!Serial); // wait for serial port to connect. Needed for native USB
 
 	RTC.begin();

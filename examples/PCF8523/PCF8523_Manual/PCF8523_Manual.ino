@@ -1,11 +1,11 @@
 #include <Wire.h>
-#include <RTC.h>
+#include <I2C_RTC.h>
 
 static PCF8523 RTC;
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   RTC.begin();
 
   RTC.setHourMode(CLOCK_H12);

@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <I2C_RTC.h>
 
-static DS3231 RTC;
+static DS3232 RTC;
 
 void setup()
 {
@@ -12,7 +12,7 @@ void setup()
 	RTC.begin(); //Not required if you are calling isConnected() function before calling other RTC functions
 
 	Serial.println();
-	Serial.println("*** RTC DS3231 ***");
+	Serial.println("*** RTC DS3232 ***");
 	Serial.print("Is Clock Running : ");
 	if(RTC.isRunning())
 		Serial.println("Yes");

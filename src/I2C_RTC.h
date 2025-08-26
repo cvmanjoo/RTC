@@ -60,7 +60,7 @@
 #define SQW32kHz 32
 
 //const char* week_days[7]
-//    = {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN" };
+//    = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT",};
 
 // enum _WEEK_DAYS_
 
@@ -101,18 +101,21 @@ class DS1307
         void setDay(uint8_t day);
         uint8_t getDay();
 
-        uint8_t getWeek();
         void setWeek(uint8_t week);
-        void updateWeek();
+        uint8_t getWeek();
+        void updateWeek(); //?
 
         void setMonth(uint8_t month);
         uint8_t getMonth();       
 
-        uint16_t getYear();        
         void setYear(uint16_t year);
-		
+        uint16_t getYear();        
+
         void setTime(uint8_t hour, uint8_t minute, uint8_t second);
         void setDate(uint8_t day, uint8_t month, uint16_t year);
+
+        void setEpoch(time_t epoch);
+        time_t getEpoch();
         
         void setDateTime(String date, String time);
         void setDateTime(String timestamp);
@@ -121,10 +124,6 @@ class DS1307
         String getDateTimeString();
         String getTimeString();
         String getDateString();
-       
-
-        void setEpoch(time_t epoch);
-        time_t getEpoch();
 
         void setOutPin(uint8_t mode);
         bool isOutPinEnabled();
@@ -133,24 +132,28 @@ class DS1307
 	private:
 		uint8_t _i2c_address = DS1307_ADDR;
 
-        uint8_t calculateDayOfWeek(uint8_t d, uint8_t m, uint16_t y);
-
         uint8_t _read_one_register(uint8_t reg_address);
         void _write_one_register(uint8_t reg_address, uint8_t reg_data);
 
-		uint8_t bin2bcd(uint8_t val);
-		uint8_t bcd2bin(uint8_t val);
+        uint8_t bin2bcd(uint8_t val);
+        uint8_t bcd2bin(uint8_t val);
+
+        uint8_t calculateDayOfWeek(uint8_t d, uint8_t m, uint16_t y);
 };
 
 class NVRAM
 {
 	private:
 		uint8_t _length = 56;
+        uint16_t _crc16_update(uint16_t crc, uint8_t a);
     public:
         bool begin();
         
 		uint8_t read(uint8_t address);
         void write(uint8_t address, uint8_t value);
+        void clear();
+
+        uint16_t getCRC16();
 		
 		uint8_t operator[](uint8_t address) const;
 		//uint8_t& operator[](uint8_t address); 
@@ -168,8 +171,8 @@ class NVRAM
 
 #define DS3231_ADDR 0x68
 
-class DS3231 {
-
+class DS3231
+{
     public:
         uint8_t begin();
         
@@ -197,24 +200,31 @@ class DS3231 {
         void setDay(uint8_t day);
         uint8_t getDay();
 
+        void setWeek(uint8_t week);    
+        uint8_t getWeek();
+
         void setMonth(uint8_t month);
         uint8_t getMonth();
 
         void setYear(uint16_t year);
         uint16_t getYear();
 
-        void setWeek(uint8_t week);
-        uint8_t getWeek();
-        void updateWeek();
+        void setEpoch(time_t epoch, bool is_unix_epoch=true);
+        time_t getEpoch(bool as_unix_epoch=true);
 
         void setDate(uint8_t day, uint8_t month, uint16_t year);
         void setTime(uint8_t hour, uint8_t minute, uint8_t second);
-        void setDateTime(char* date, char* time);
+        
+        void setDateTime(String date, String time);
         void setDateTime(String timestamp);
 
+        tm getDateTime();
 
-        void setEpoch(time_t epoch, bool is_unix_epoch=true);
-        time_t getEpoch(bool as_unix_epoch=true);
+        String getTimeString();
+        String getDateString();
+        String getWeekString();
+
+        //Alarm Functions
 
         void enableAlarmPin();
 
@@ -227,13 +237,12 @@ class DS3231 {
         bool isAlarm1Enabled();
         bool isAlarm2Enabled();
 
+        // Alarms are still under development Do not use it now
         void setAlarm1();
         void setAlarm1(uint8_t second);
         void setAlarm1(uint8_t minute, uint8_t second);
         void setAlarm1(uint8_t hour, uint8_t minute, uint8_t second);
         void setAlarm1(uint8_t day, uint8_t hour, uint8_t minute, uint8_t second);
-
-        //DateTime getAlarm1();
 
         void setAlarm2();
         void setAlarm2(uint8_t minute);
@@ -266,17 +275,31 @@ class DS3231 {
         void setAgingOffset(int8_t);
 
         float getTemp();
-
+    
     private:
         uint8_t _i2c_address = DS3231_ADDR;
 
-        uint8_t bin2bcd(uint8_t val);
-        uint8_t bcd2bin(uint8_t val);
-        
         uint8_t _read_one_register(uint8_t reg_address);
         void _write_one_register(uint8_t reg_address, uint8_t reg_data);
+
+        uint8_t bin2bcd(uint8_t val);
+        uint8_t bcd2bin(uint8_t val);
+
+        uint8_t calculateDayOfWeek(uint8_t d, uint8_t m, uint16_t y);
 };
 
+#define DS3232_ADDR 0x68
+
+class DS3232 : public DS3231
+{
+    private:
+        uint8_t _i2c_address = DS3232_ADDR;
+        uint8_t _length = 236;
+    public :
+        uint8_t read(uint8_t address);
+        void write(uint8_t address, uint8_t value);
+
+};
 /*
 
 */
@@ -293,6 +316,8 @@ class PCF8563
 {
     public:
         bool begin();
+
+        bool isConnected();
 
         bool isRunning(void);
         void startClock();

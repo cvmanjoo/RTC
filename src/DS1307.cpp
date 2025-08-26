@@ -18,6 +18,7 @@
 #define R_MONTH   0x05
 #define R_YEAR	  0x06
 #define R_CONTROL 0X07
+#define R_NVRAM	  0x08
 
 #define CH 7
 
@@ -135,7 +136,6 @@ uint8_t DS1307::getSeconds()
 void DS1307::setSeconds(uint8_t seconds)
 {
 	uint8_t reg_data, ch_bit;
-
 	if (seconds >= 00 && seconds <= 59)
 	{
 		reg_data = _read_one_register(R_SECONDS);
@@ -169,24 +169,6 @@ void DS1307::setMinutes(uint8_t minutes)
 /*-----------------------------------------------------------
 getHours
 -----------------------------------------------------------*/
-uint8_t DS1307::getHours()
-{
-	uint8_t reg_data, h_mode;
-
-	reg_data = _read_one_register(R_HOURS);
-	h_mode = bitRead(reg_data, 6);  // Read Hour mode from 6th bit
-	if(h_mode == CLOCK_H24)
-	{
-		return (bcd2bin(reg_data));
-	}
-	else //h_mode == CLOCK_H12
-	{
-		bitClear(reg_data, 5);
-		bitClear(reg_data, 6);
-		return (bcd2bin(reg_data));
-	}
-}
-
 void  DS1307::setHours(uint8_t hours)
 {
 	uint8_t reg_hour; 
@@ -218,9 +200,35 @@ void  DS1307::setHours(uint8_t hours)
 	}
 }
 
+
+uint8_t DS1307::getHours()
+{
+	uint8_t reg_data, h_mode;
+
+	reg_data = _read_one_register(R_HOURS);
+	h_mode = bitRead(reg_data, 6);  // Read Hour mode from 6th bit
+	if(h_mode == CLOCK_H24)
+	{
+		return (bcd2bin(reg_data));
+	}
+	else //h_mode == CLOCK_H12
+	{
+		bitClear(reg_data, 5);
+		bitClear(reg_data, 6);
+		return (bcd2bin(reg_data));
+	}
+}
+
+
 /*-----------------------------------------------------------
 getWeek
 -----------------------------------------------------------*/
+void DS1307::setWeek(uint8_t week)
+{
+	if (week >= 1 && week <= 7)
+		_write_one_register(R_WEEKDAY,week);
+}
+
 uint8_t DS1307::getWeek()
 {
 	uint8_t reg_week;
@@ -228,11 +236,6 @@ uint8_t DS1307::getWeek()
 	return reg_week;
 }
 
-void DS1307::setWeek(uint8_t week)
-{
-	if (week >= 1 && week <= 7)
-		_write_one_register(R_WEEKDAY,week);
-}
 
 /*-----------------------------------------------------------
 getDay
@@ -251,15 +254,6 @@ void DS1307::setDay(uint8_t day)
 }
 
 /*-----------------------------------------------------------
-getMonth()
------------------------------------------------------------*/
-uint8_t DS1307::getMonth()
-{
-	uint8_t reg_month;
-	reg_month = _read_one_register(R_MONTH);
-	return(bcd2bin(reg_month));
-}
-/*-----------------------------------------------------------
 setMonth()
 -----------------------------------------------------------*/
 
@@ -270,15 +264,8 @@ void DS1307::setMonth(uint8_t month)
 }
 
 /*-----------------------------------------------------------
-getYear (Completed)
+getMonth()
 -----------------------------------------------------------*/
-uint16_t DS1307::getYear()
-{
-	uint8_t reg_year;
-	reg_year = _read_one_register(R_YEAR);
-	return(bcd2bin(reg_year) + 2000);
-}
-
 void DS1307::setYear(uint16_t year)
 {	
 	if((year >= 00 && year <= 99) || (year >= 2000 && year <= 2099))
@@ -286,6 +273,22 @@ void DS1307::setYear(uint16_t year)
 		year = year % 100; //Converting to 2 Digit
 		_write_one_register(R_YEAR,bin2bcd(year));
 	}
+}
+uint8_t DS1307::getMonth()
+{
+	uint8_t reg_month;
+	reg_month = _read_one_register(R_MONTH);
+	return(bcd2bin(reg_month));
+}
+
+/*-----------------------------------------------------------
+getYear (Completed)
+-----------------------------------------------------------*/
+uint16_t DS1307::getYear()
+{
+	uint8_t reg_year;
+	reg_year = _read_one_register(R_YEAR);
+	return(bcd2bin(reg_year) + 2000);
 }
 
 /*-----------------------------------------------------------
@@ -936,7 +939,7 @@ String DS1307::getTimeString()
 
 String DS1307::getDateString()
 {
-    uint8_t week, day, month, meridiem, h_mode;
+    uint8_t week, day, month;
 	uint16_t year;
 	String dateString;
 
@@ -946,7 +949,6 @@ String DS1307::getDateString()
 	Wire.requestFrom(DS1307_ADDR, 7);
 
 	week = Wire.read();
-	week = week;
 
 	day = Wire.read();
 	day = bcd2bin(day);
@@ -1001,7 +1003,7 @@ String DS1307::getDateString()
 bool NVRAM::begin()
 {
 	Wire.begin(); // join i2c bus
-	Wire.beginTransmission(0x68);
+	Wire.beginTransmission(DS1307_ADDR);
 	return (Wire.endTransmission() == 0 ? true : false);
 }
 
@@ -1010,7 +1012,7 @@ uint8_t NVRAM::read(uint8_t address)
 	uint8_t data = 0x00;
 	if(address >= 1 or address <=56 )
 	{
-		address = (address % length()) + 0x08;
+		address = (address % length()) + R_NVRAM;
 		Wire.beginTransmission(DS1307_ADDR);
 		Wire.write(address);
 		Wire.endTransmission();
@@ -1023,12 +1025,61 @@ void NVRAM::write(uint8_t address, uint8_t data)
 {
 	if(address >= 1 or address <=56 )
 	{
-		address = address + 0x08;
+		address = address + R_NVRAM;
 		Wire.beginTransmission(DS1307_ADDR);
 		Wire.write(address);
 		Wire.write(data);
 		Wire.endTransmission();
 	}
+}
+
+void NVRAM::clear()
+{
+	{ //clear DS1397 RAM with 56 bytes = 7 chunks a 8 bytes
+		for (byte chunk=0;chunk<7;chunk++) 
+		{
+			Wire.beginTransmission(DS1307_ADDR);
+			Wire.write(8+chunk*8); // set register pointer to 8 + Offset
+			for (byte i=0; i<8; i++) 
+				Wire.write(0xFF); // zero out RAM address
+			Wire.endTransmission();    
+		}
+	}
+
+	// Wire.beginTransmission(DS1307_ADDR);
+	// Wire.write(R_NVRAM);
+
+	// for (uint8_t address = 0; address < 56; address++)
+	// 		Wire.write(0xAA);
+	// Wire.endTransmission();
+}
+
+uint16_t NVRAM::getCRC16()
+{
+	uint16_t crc=0; // starting value as you like, must be the same before each calculation
+	for (int i=0;i<_length;i++) // for each character in the string
+	{
+		crc= _crc16_update (crc, read(i)); // update the crc value
+	}
+	return crc;
+
+	// uint32_t crc = 0L;
+	// const uint32_t crc_table[16] = {
+	// 0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac,
+	// 0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c,
+	// 0xedb88320, 0xf00f9344, 0xd6d6a3e8, 0xcb61b38c,
+	// 0x9b64c2b0, 0x86d3d2d4, 0xa00ae278, 0xbdbdf21c
+	// };
+
+	// for (int index = 0 ; index < _length  ; ++index)
+    // {
+    //     crc = crc_table[(crc ^ read(index)) & 0x0f] ^ (crc >> 4);
+    //     crc = crc_table[(crc ^ (read(index) >> 4)) & 0x0f] ^ (crc >> 4);
+    //     crc = ~crc;
+    // }
+
+	// return crc;
+    
 }
 
 /*Operator [] Read function*/
@@ -1039,7 +1090,7 @@ uint8_t NVRAM::operator[](uint8_t address) const
 	{
 		//Serial.print("address = ");
 		//Serial.println(address);
-		address = (address % _length) + 0x08;
+		address = (address % _length) + R_NVRAM;
 		Wire.beginTransmission(DS1307_ADDR);
 		Wire.write(address);
 		Wire.endTransmission();
@@ -1119,6 +1170,20 @@ uint8_t DS1307::calculateDayOfWeek(uint8_t day, uint8_t month, uint16_t year)
 		return(7);
 	else
     	return(week);
+}
+
+uint16_t NVRAM::_crc16_update(uint16_t crc, uint8_t a)
+{
+	int i;
+	crc ^= a;
+	for (i = 0; i < 8; ++i)
+	{
+		if (crc & 1)
+			crc = (crc >> 1) ^ 0xA001;
+		else
+			crc = (crc >> 1);
+	}
+	return crc;
 }
 
 uint8_t DS1307::_read_one_register(uint8_t reg_address)

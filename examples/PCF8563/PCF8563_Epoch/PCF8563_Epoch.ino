@@ -5,7 +5,7 @@ static PCF8563 RTC;
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   RTC.begin();
 
   //RTC.setEpoch(0);

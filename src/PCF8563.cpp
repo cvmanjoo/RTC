@@ -12,12 +12,37 @@
 #include <Wire.h>
 #include <I2C_RTC.h>
 
+#define R_CONTROL_STATUS_1 	0x00
+#define R_CONTROL_STATUS_2 	0x01
+#define R_VL_SECONDS		0x02
+#define R_MINUTES			0x03
+#define R_HOURS 			0x04
+#define R_DAYS   			0x05
+#define R_WEEKDAYS 			0x06
+#define R_CENTURY_MONTHS 	0X07
+#define R_YEARS			 	0x08
+#define R_MINUTES_ALARM     0x09
+#define R_HOURS_ALARM     	0x0A
+#define R_DAY_ALARM       	0x0B
+#define R_WEEKDAY_ALARM   	0x0C
+#define R_CLKOUT_CONTROL   	0x0D
+#define R_TIMER_CONTROL    	0x0E
+#define R_TIMER           	0x0F
+
+#define VL 7
+
 bool PCF8563::begin()
 {
     Wire.begin(); // join i2c bus
-	//Wire.setClock(400000); //Optional - set I2C SCL to Low Speed Mode of 400kHz
-    Wire.beginTransmission (PCF8563_ADDR);
-    return (Wire.endTransmission() == 0 ?  true : false);
+    return(PCF8563_ADDR);
+	//Wire.endTransmission();
+}
+
+bool PCF8563::isConnected()
+{
+	Wire.begin();
+	Wire.beginTransmission(PCF8563_ADDR);
+	return(Wire.endTransmission() == 0 ? true : false);
 }
 
 
@@ -113,17 +138,10 @@ get & set Second
 -----------------------------------------------------------*/
 uint8_t PCF8563::getSeconds()
 {
-    uint8_t seconds;
-
-    Wire.beginTransmission(PCF8563_ADDR);
-    Wire.write(0x02);
-    Wire.endTransmission();
-
-    Wire.requestFrom(PCF8563_ADDR, 1);
-    seconds = Wire.read();
-	bitClear(seconds, 7); // Clearing VL Bit if Set.
-    return (bcd2bin(seconds));
-
+	uint8_t reg_data;
+	reg_data = _read_one_register(R_VL_SECONDS);
+	bitClear(reg_data, VL); // Clearing CH Bit if Set.
+	return (bcd2bin(reg_data));
 }
 
 void PCF8563::setSeconds(uint8_t seconds)

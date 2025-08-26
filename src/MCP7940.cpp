@@ -190,7 +190,7 @@ void  MCP7940::setHours(uint8_t hours)
 
 		if (h_mode == CLOCK_H24)
 		{
-            _write_one_register(RTCHOUR,hours);
+            _write_one_register(RTCHOUR,bin2bcd(hours));
 		}
 		else if (h_mode == CLOCK_H12)
 		{
