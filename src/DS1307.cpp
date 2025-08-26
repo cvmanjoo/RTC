@@ -236,6 +236,26 @@ uint8_t DS1307::getWeek()
 	return reg_week;
 }
 
+void DS1307::updateWeek()
+{
+	// Calculate Day of week based on date, month and year
+	// and update the weekday register
+
+	uint8_t day, month, week_day;
+	uint16_t year;
+
+	Wire.beginTransmission(DS1307_ADDR);
+	Wire.write(R_DATE);
+	Wire.endTransmission();
+	Wire.requestFrom(DS3231_ADDR, 7);
+
+	day = bcd2bin(Wire.read());
+	month =bcd2bin(Wire.read());
+	year = bcd2bin(Wire.read()) + 2000;
+
+	week_day = _calculateDayOfWeek(day, month, year);
+	_write_one_register(R_WEEKDAY,week_day);
+}
 
 /*-----------------------------------------------------------
 getDay
@@ -263,17 +283,6 @@ void DS1307::setMonth(uint8_t month)
 		_write_one_register(R_MONTH,bin2bcd(month));
 }
 
-/*-----------------------------------------------------------
-getMonth()
------------------------------------------------------------*/
-void DS1307::setYear(uint16_t year)
-{	
-	if((year >= 00 && year <= 99) || (year >= 2000 && year <= 2099))
-	{
-		year = year % 100; //Converting to 2 Digit
-		_write_one_register(R_YEAR,bin2bcd(year));
-	}
-}
 uint8_t DS1307::getMonth()
 {
 	uint8_t reg_month;
@@ -284,6 +293,16 @@ uint8_t DS1307::getMonth()
 /*-----------------------------------------------------------
 getYear (Completed)
 -----------------------------------------------------------*/
+
+void DS1307::setYear(uint16_t year)
+{	
+	if((year >= 00 && year <= 99) || (year >= 2000 && year <= 2099))
+	{
+		year = year % 100; //Converting to 2 Digit
+		_write_one_register(R_YEAR,bin2bcd(year));
+	}
+}
+
 uint16_t DS1307::getYear()
 {
 	uint8_t reg_year;
@@ -433,7 +452,7 @@ void DS1307::setDateTime(String date, String time)
 		Wire.write(hours);
 	}
 	
-	Wire.write(calculateDayOfWeek(day, month, year));
+	Wire.write(_calculateDayOfWeek(day, month, year));
 	Wire.write(bin2bcd(day));
 	Wire.write(bin2bcd(month));
 	Wire.write(bin2bcd(year));
@@ -944,11 +963,9 @@ String DS1307::getDateString()
 	String dateString;
 
 	Wire.beginTransmission(DS1307_ADDR);
-	Wire.write(R_WEEKDAY);
+	Wire.write(R_DATE);
 	Wire.endTransmission();
 	Wire.requestFrom(DS1307_ADDR, 7);
-
-	week = Wire.read();
 
 	day = Wire.read();
 	day = bcd2bin(day);
@@ -959,32 +976,6 @@ String DS1307::getDateString()
 	year = Wire.read();
 	year = bcd2bin(year) + 2000;
 
-	switch (week)
-	{
-	case 1:
-		dateString.concat("SUN");
-		break;
-	case 2:
-		dateString.concat("MON");
-		break;
-	case 3:
-		dateString.concat("TUE");
-		break;
-	case 4:
-		dateString.concat("WED");
-		break;
-	case 5:
-		dateString.concat("THU");
-		break;
-	case 6:
-		dateString.concat("FRI");
-		break;
-	case 7:
-		dateString.concat("SAT");
-		break;
-	}
-	
-	dateString.concat(" ");
 	if(day<10)
 		dateString.concat("0");
 	dateString.concat(day);
@@ -997,6 +988,41 @@ String DS1307::getDateString()
 
 	return (dateString);
 }
+
+String DS1307::getWeekString()
+{
+	uint8_t week;
+	String weekString;
+
+	week = _read_one_register(R_WEEKDAY);
+	
+	switch (week)
+	{
+		case 1:
+			weekString.concat("Sunday");
+			break;
+		case 2:
+			weekString.concat("Monday");
+			break;
+		case 3:
+			weekString.concat("Tuesday");
+			break;
+		case 4:
+			weekString.concat("Wednesday");
+			break;
+		case 5:
+			weekString.concat("Thursday");
+			break;
+		case 6:
+			weekString.concat("Friday");
+			break;
+		case 7:
+			weekString.concat("Saturday");
+			break;
+	}
+	return (weekString);
+}
+
 
 /* NVRAM Functions */
 
@@ -1152,24 +1178,26 @@ uint8_t NVRAM::length()
  *  
 **************************************************************/
 
-uint8_t DS1307::calculateDayOfWeek(uint8_t day, uint8_t month, uint16_t year)
+uint8_t DS1307::_calculateDayOfWeek(uint8_t day, uint8_t month, uint16_t year)
 {
-	//Based on Zeller's Congruence algorithm 
-	uint8_t week;
-    if (month < 3)
-	{
-        month += 12;
-        year -= 1;
-    }
-    int K = year % 100;
-    int J = year / 100;
-    int f = day + 13 * (month + 1) / 5 + K + K / 4 + J / 4 + 5 * J;
-	week = f % 7;
-	
-	if(week == 0)
-		return(7);
-	else
-    	return(week);
+	// Zeller's Congruence (Gregorian calendar)
+	// Works for any date after 01 Mar 2000.
+	// Adjust months and years for Zeller's Congruence
+	if (month < 3) {
+		month += 12;
+		year -= 1;
+	}
+
+	int K = year % 100;      // Year within century
+	int J = year / 100;      // Zero-based century
+
+	// Zeller's formula
+	int h = (day + 13*(month + 1)/5 + K + K/4 + J/4 + 5*J) % 7;
+
+	// Convert Zeller's output to 1=Sunday ... 7=Saturday
+	int weekday = ((h + 6) % 7) + 1;
+
+	return weekday;
 }
 
 uint16_t NVRAM::_crc16_update(uint16_t crc, uint8_t a)

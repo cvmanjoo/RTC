@@ -24,11 +24,12 @@ void setup()
     RTC.setMinutes(47);
     RTC.setSeconds(56);
 
-    RTC.setWeek(1);
+    //RTC.setWeek(1); // To update the week manually.
+
+	RTC.updateWeek(); // updates the week automatically based on date in the RTC.
 
     //RTC.setDate(22,07,29);
     //RTC.setTime(22,10,20);
-
 
 }
 

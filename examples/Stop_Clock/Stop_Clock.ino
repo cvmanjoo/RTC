@@ -3,8 +3,8 @@
 
 //Uncomment your RTC.
 
-static DS1307 RTC;
-//static DS3231 RTC;
+//static DS1307 RTC;
+static DS3231 RTC;
 //static PCF8563 RTC;
 //static PCF8523 RTC;
 

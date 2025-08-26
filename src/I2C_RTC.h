@@ -124,6 +124,7 @@ class DS1307
         String getDateTimeString();
         String getTimeString();
         String getDateString();
+        String getWeekString();
 
         void setOutPin(uint8_t mode);
         bool isOutPinEnabled();
@@ -138,7 +139,7 @@ class DS1307
         uint8_t bin2bcd(uint8_t val);
         uint8_t bcd2bin(uint8_t val);
 
-        uint8_t calculateDayOfWeek(uint8_t d, uint8_t m, uint16_t y);
+        uint8_t _calculateDayOfWeek(uint8_t d, uint8_t m, uint16_t y);
 };
 
 class NVRAM
@@ -202,6 +203,7 @@ class DS3231
 
         void setWeek(uint8_t week);    
         uint8_t getWeek();
+        void updateWeek();
 
         void setMonth(uint8_t month);
         uint8_t getMonth();
@@ -285,7 +287,7 @@ class DS3231
         uint8_t bin2bcd(uint8_t val);
         uint8_t bcd2bin(uint8_t val);
 
-        uint8_t calculateDayOfWeek(uint8_t d, uint8_t m, uint16_t y);
+        uint8_t _calculateDayOfWeek(uint8_t d, uint8_t m, uint16_t y);
 };
 
 #define DS3232_ADDR 0x68

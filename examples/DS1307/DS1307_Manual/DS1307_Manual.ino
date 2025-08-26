@@ -13,107 +13,48 @@
 #include <Wire.h>
 #include <I2C_RTC.h>
 
-static DS1307 RTC;
+static DS3231 RTC;
 
 void setup()
 {
-	Serial.begin(115200);
-	while (!Serial); // wait for serial port to connect. Needed for native USB port only
+    Serial.begin(115200);
     RTC.begin();
-	Serial.println();
 
-	if(RTC.isConnected() == false)
-	{
-		Serial.println("RTC Not Connected!");
-		while(true);
-	}
+    RTC.setHourMode(CLOCK_H12);
+    //RTC.setHourMode(CLOCK_H24);
 
-	/* Example to Set all the varibles individually */
+    if (RTC.getHourMode() == CLOCK_H12)
+    {
+        //RTC.setMeridiem(HOUR_PM);
+    }
 
-	RTC.setHourMode(CLOCK_H12);
-	//RTC.setHourMode(CLOCK_H24);
+    RTC.setDay(22);
+    RTC.setMonth(5);
+    RTC.setYear(2020);
 
-	RTC.setDay(13);
-	RTC.setMonth(05);
-	RTC.setYear(2020);
+    RTC.setHours(23);
+    RTC.setMinutes(47);
+    RTC.setSeconds(56);
 
-	RTC.setHours(9);
-	RTC.setMinutes(47);
-	RTC.setSeconds(56);
+    //RTC.setWeek(1); // To update the week manually.
 
-	if (RTC.getHourMode() == CLOCK_H12)
-		RTC.setMeridiem(HOUR_PM);
+	RTC.updateWeek(); // updates the week automatically based on date in the RTC.
 
-	RTC.setWeek(5); //1 for sunday - 7 for Saturday
+    //RTC.setDate(22,07,29);
+    //RTC.setTime(22,10,20);
 
-	Serial.println(RTC.getDateTimeString());
-
-	/* Example to Set Time and Date Separately */
-
-	RTC.setDate(22,07,21);
-	RTC.setTime(23,00,00);
-
-	Serial.println(RTC.getDateTimeString());
-
-	RTC.startClock();
 }
 
 void loop()
 {
-	 /* Example to Get all the varibles
-	 indivisually and Display them */
-	switch (RTC.getWeek())
+	if(RTC.isRunning())
 	{
-	case 1:
-		Serial.print("SUN");
-		break;
-	case 2:
-		Serial.print("MON");
-		break;
-	case 3:
-		Serial.print("TUE");
-		break;
-	case 4:
-		Serial.print("WED");
-		break;
-	case 5:
-		Serial.print("THU");
-		break;
-	case 6:
-		Serial.print("FRI");
-		break;
-	case 7:
-		Serial.print("SAT");
-		break;
-	}
-	Serial.print(" ");
-	Serial.print(RTC.getDay());
-	Serial.print("-");
-	Serial.print(RTC.getMonth());
-	Serial.print("-");
-	Serial.print(RTC.getYear());
-
-	Serial.print(" ");
-
-	Serial.print(RTC.getHours());
-	Serial.print(":");
-	Serial.print(RTC.getMinutes());
-	Serial.print(":");
-	Serial.print(RTC.getSeconds());
-	Serial.print(" ");
-
-	if (RTC.getHourMode() == CLOCK_H12)
-	{
-		switch (RTC.getMeridiem())
-		{
-		  case HOUR_AM :
-			Serial.print(" AM");
-			break;
-		  case HOUR_PM :
-			Serial.print(" PM");
-			break;
-		}
-	}
-	Serial.println("");
-	delay(10000);
+    Serial.print(RTC.getWeekString().substring(0, 3));
+    Serial.print(" ");
+    Serial.print(RTC.getDateString());
+    Serial.print(" ");
+    Serial.print(RTC.getTimeString());
+    Serial.println();
+    }
+  delay(1000);
 }

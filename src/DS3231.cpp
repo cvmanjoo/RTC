@@ -282,6 +282,35 @@ uint8_t DS3231::getWeek()
 	return reg_week;
 }
 
+void DS3231::updateWeek()
+{
+	// Calculate Day of week based on date, month and year
+	// and update the weekday register
+
+	uint8_t day, month, century_bit, week_day;
+	uint16_t century, year;
+
+	Wire.beginTransmission(DS3231_ADDR);
+	Wire.write(R_DATE);
+	Wire.endTransmission();
+	Wire.requestFrom(DS3231_ADDR, 7);
+
+	day = bcd2bin(Wire.read());
+	
+	month = Wire.read();
+	century_bit = bitRead(month, 7);
+	month = bcd2bin(bitClear(month, 7));
+
+	(century_bit == 1) ? century = 1900 : century = 2000;
+
+	year = Wire.read();
+	year = bcd2bin(year) + century;
+
+	week_day = _calculateDayOfWeek(day, month, year);
+
+	_write_one_register(R_WEEKDAY,week_day);
+}
+
 /*-----------------------------------------------------------
 getDay
 -----------------------------------------------------------*/
@@ -450,8 +479,8 @@ void DS3231::setDateTime(String date, String time)
 {
 	bool h_mode, meridiem, century_bit;
 	uint8_t reg_hours;
-	uint8_t day, month, hours, minutes, seconds;
-	uint16_t year;
+	uint8_t day, month, hours, minutes, seconds, month_full;
+	uint16_t year, year_full;
 	
 	reg_hours   = _read_one_register(R_HOURS);
 	h_mode = bitRead(reg_hours, 6); //Get hour mode
@@ -480,8 +509,10 @@ void DS3231::setDateTime(String date, String time)
 	else if (year >= 2000 && year <= 2099)
 		century_bit = 0;
 
+	year_full = year;
 	year = year % 100;		//Converting to 2 Digit
 
+	month_full = month;
 	month = bin2bcd(month);
 
 	bitWrite(month, 7, century_bit);
@@ -509,7 +540,7 @@ void DS3231::setDateTime(String date, String time)
 		Wire.write(hours);
 	}
 	
-	Wire.write(calculateDayOfWeek(day, month, year));
+	Wire.write(_calculateDayOfWeek(day, month_full, year_full));
 	Wire.write(bin2bcd(day));
 	Wire.write(month);
 	Wire.write(bin2bcd(year));
@@ -1407,31 +1438,26 @@ float DS3231::getTemp()
 
 /* Private Functions */
 
-uint8_t DS3231::calculateDayOfWeek(uint8_t day, uint8_t month, uint16_t year)
+uint8_t DS3231::_calculateDayOfWeek(uint8_t day, uint8_t month, uint16_t year)
 {
-	//Based on Zeller's Congruence algorithm
-	uint8_t week;
-	if (month == 1) 
-	{
-		month = 13;
-		year--;
-    }
-    if (month == 2)
-	{
-        month = 14;
-        year--;
-    }
-    int q = day;
-    int m = month;
-    int k = year % 100;
-    int j = year / 100;
-    int h = q + 13 * (m + 1) / 5 + k + k / 4 + j / 4 + 5 * j;
-    week = h % 7;
+	// Zeller's Congruence (Gregorian calendar)
+	// Works for any date after 01 Mar 2000.
+	// Adjust months and years for Zeller's Congruence
+	if (month < 3) {
+		month += 12;
+		year -= 1;
+	}
 
-	if(week == 0)
-		return(7);
-	else
-    	return(week);
+	int K = year % 100;      // Year within century
+	int J = year / 100;      // Zero-based century
+
+	// Zeller's formula
+	int h = (day + 13*(month + 1)/5 + K + K/4 + J/4 + 5*J) % 7;
+
+	// Convert Zeller's output to 1=Sunday ... 7=Saturday
+	int weekday = ((h + 6) % 7) + 1;
+
+	return weekday;
 }
 
 uint8_t DS3231::_read_one_register(uint8_t reg_address)

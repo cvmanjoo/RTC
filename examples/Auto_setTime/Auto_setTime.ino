@@ -117,7 +117,7 @@ void setup()
 		//RTC.setHourMode(CLOCK_H24);  
 
 		RTC.setDateTime(__TIMESTAMP__);
-        Serial.print(__TIMESTAMP__);
+        Serial.println(__TIMESTAMP__);
         //RTC.setDateTime("Fri Mar 08 00:01:53 2024");
 		
         //RTC.setDateTime(__DATE__, __TIME__);
