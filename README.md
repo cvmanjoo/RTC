@@ -5,12 +5,13 @@
 This library enables the functionality for clock reading, clock setting, alarms and timers of I2C RTCs.
 
 
-| Features | DS1037 | DS3231 | PCF8563 | PCF8623 | MCP7940 |
-|:--------:|:------:|:------:|:-------:|:-------:|:-------:|
-|  Address |  0x68  |  0x68  |   0x51  |   0x68  |  0x6F   |
-| 12 hours |  Yes   |  Yes   |   No    |   Yes   |   Yes   |
-|  Alarms  |  0     |  2     |   1     |   0     |    2    |
-|  Timers  |  0     |  0     |   1     |   0     |    0    |
+| Features  | DS1037 | DS3231 | PCF8563 | PCF8523 | MCP7940 |
+|:---------:|:------:|:------:|:-------:|:-------:|:-------:|
+| Address   |  0x68  |  0x68  |   0x51  |   0x68  |  0x6F   |
+| 12 hours  |  Yes   |  Yes   |   No    |   Yes   |   Yes   |
+| Centuries |  0     |  1     |   1     |   1     |    1    |
+| Alarms    |  0     |  2     |   2     |   1     |    2    |
+| Timers    |  0     |  0     |   1     |   2     |    0    |
 
 
 
@@ -29,7 +30,6 @@ Search RTC from Arduino Library
 
 # Future
 * DS1337
-* DS3232
 * RV-8803-C7
 * SD3031
 

@@ -3,6 +3,8 @@
 
 static PCF8563 RTC;
 
+struct tm rtc_time;
+
 void setup()
 {
 	Serial.begin(115200);
@@ -16,31 +18,35 @@ void setup()
 		while(true);
 	}
 
-	RTC.setDay(13);
-	RTC.setMonth(05);
-	RTC.setYear(2030);
-	RTC.setWeek(7);  // Always Set weekday after setting Date
-	RTC.setHours(9);
-	RTC.setMinutes(47);
-	RTC.setSeconds(56);
+
+	//SUN 16-00-2026 02:20:00
+
+	rtc_time.tm_mday = 16;
+	rtc_time.tm_mon = 9;  // Starts from 0-11
+	rtc_time.tm_year = 2026;
+
+	rtc_time.tm_hour = 2;	
+	rtc_time.tm_min = 20;
+	rtc_time.tm_sec = 36;
+
+
+	RTC.setDateTime(rtc_time);
+
 	Serial.println(RTC.getDateTimeString());
 
-	RTC.setDate(22, 7, 1985);  //SetDate(Day,Month,Year)
-	RTC.setTime(20, 14, 36);  //SetTime(Hours,Minutes,Seconds)
-	RTC.updateWeek();
-	Serial.println(RTC.getDateTimeString());
-}
-
-void loop() 
-{
-	RTC.setDate(22, 7, 2025);  //SetDate(Day,Month,Year)
-	RTC.setTime(12, 34, 56);  //SetTime(Hours,Minutes,Seconds)
+	delay(1000);
 	
 	Serial.print(RTC.getWeekString().substring(0,3));
 	Serial.print(" ");
 	Serial.print(RTC.getDateString());
 	Serial.print(" ");
 	Serial.println(RTC.getTimeString());
+	
+}
+
+void loop() 
+{
+;
 
 	delay(2000);
 }

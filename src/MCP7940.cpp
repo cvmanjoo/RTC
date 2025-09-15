@@ -59,6 +59,12 @@
 #define CLCK_12_24 6
 #define MRDN_AM_PM 5
 
+uint8_t MCP7940::begin()
+{
+    Wire.begin(); // join i2c bus
+    return(MCP7940_ADDR);
+}
+
 bool MCP7940::isConnected()
 {
     Wire.begin(); // join i2c bus

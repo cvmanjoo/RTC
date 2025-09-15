@@ -34,6 +34,16 @@ uint8_t DS1307::begin()
 	//Wire.endTransmission();
 }
 
+// uint8_t DS1307::begin(uint8_t sda, uint8_t scl)
+// { 
+// 	Wire.begin();
+// 	Wire.setSDA(sda);
+// 	Wire.setSCL(scl);
+//     return(DS1307_ADDR);
+// 	//Wire.endTransmission();
+// }
+
+
 bool DS1307::isConnected()
 {
 	Wire.begin();
@@ -151,19 +161,16 @@ getMinute
 -----------------------------------------------------------*/
 uint8_t DS1307::getMinutes()
 {
-	uint8_t reg_data;
-	reg_data = _read_one_register(R_MINUTES);
-	return (bcd2bin(reg_data));
+	uint8_t minutes;
+	minutes = _read_one_register(R_MINUTES);
+	return (bcd2bin(minutes));
 
 }
 
 void DS1307::setMinutes(uint8_t minutes)
 {
-	uint8_t reg_data;
 	if(minutes >= 00 && minutes <= 59)
-	{	
 		_write_one_register(R_MINUTES,bin2bcd(minutes));
-	}
 }
 
 /*-----------------------------------------------------------
@@ -194,7 +201,7 @@ void  DS1307::setHours(uint8_t hours)
 				hours -= 12;
 			hours = bin2bcd(hours);
 			bitWrite(hours, 5, meridiem);
-			bitSet(hours, 6);
+			bitSet(hours, 6); //Might not needed!
 			_write_one_register(R_HOURS,hours);
 		}
 	}
@@ -247,7 +254,7 @@ void DS1307::updateWeek()
 	Wire.beginTransmission(DS1307_ADDR);
 	Wire.write(R_DATE);
 	Wire.endTransmission();
-	Wire.requestFrom(DS3231_ADDR, 7);
+	Wire.requestFrom(DS3231_ADDR, 3);
 
 	day = bcd2bin(Wire.read());
 	month =bcd2bin(Wire.read());
@@ -387,10 +394,12 @@ void DS1307::setDate(uint8_t day, uint8_t month, uint16_t year)
 /*-----------------------------------------------------------
 setDateTime(__DATE__,__TIME__)
 
-// sample input
-
-__DATE__ = "Dec 26 2009"
-__TIME__ = "12:34:56"
+// Note: This function assumes that the input date and time strings are always valid
+// and in the correct format as provided by the compiler macros __DATE__ and __TIME__
+// It does not perform any error checking or validation on the input strings.
+// Example input: __DATE__ = "Dec 26 2009", __TIME__= "12:34:56"
+// The function extracts the day, month, year, hour, minute, and second from
+// the input strings and sets the RTC accordingly.
 
 -----------------------------------------------------------*/
 
@@ -903,13 +912,16 @@ String DS1307::getTimeString()
 	uint16_t year;
 	String timeString;
 
+	//Get h_mode here to avoid multiple I2C reads
+	h_mode = getHourMode();
+
 	Wire.beginTransmission(DS1307_ADDR);
 	Wire.write(R_SECONDS);
 	Wire.endTransmission();
 	Wire.requestFrom(DS1307_ADDR, 3);
 
 	seconds = Wire.read();
-	bitClear(seconds, 3);
+	bitClear(seconds, 7);
 	seconds = bcd2bin(seconds);
 
 	minutes = Wire.read();
@@ -958,7 +970,7 @@ String DS1307::getTimeString()
 
 String DS1307::getDateString()
 {
-    uint8_t week, day, month;
+    uint8_t day, month;
 	uint16_t year;
 	String dateString;
 

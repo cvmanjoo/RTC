@@ -13,9 +13,9 @@ void setup()
 
 
 
-  RTC.setDay(22);
-  RTC.setMonth(5);
-  RTC.setYear(2020);
+  RTC.setDay(15);
+  RTC.setMonth(9);
+  RTC.setYear(1999);
 
   RTC.setHours(28);
   RTC.setMinutes(47);

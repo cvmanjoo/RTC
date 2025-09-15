@@ -632,6 +632,10 @@ void DS3231::setDateTime(String timestamp)
 
 }
 
+void DS3231::setDateTime(tm)
+{
+}
+
 /*-----------------------------------------------------------
 setEpoch()
 
@@ -639,11 +643,12 @@ https://en.wikipedia.org/wiki/Epoch_(computing)
 -----------------------------------------------------------*/
 //void DS3231::setEpoch(time_t epoch, bool is_unix_epoch=true)
 
-void DS3231::setEpoch(time_t epoch, bool is_unix_epoch)
+void DS3231::setEpoch(time_t epoch)
 {
 	uint8_t h_mode, data, century;
 	uint16_t year;
 	struct tm epoch_tm, *ptr_epoch_tm;
+	bool is_unix_epoch;
 
 	// adjust UNIX epoch to ARDUINO epoch, otherwise `tm` struct
 	// is one year and one (leap) day off.
@@ -751,12 +756,13 @@ void DS3231::setEpoch(time_t epoch, bool is_unix_epoch)
 getEpoch()
 -----------------------------------------------------------*/
 //time_t DS3231::getEpoch(bool as_unix_epoch=true)
-time_t DS3231::getEpoch(bool as_unix_epoch)
+time_t DS3231::getEpoch()
 {
 	uint8_t century_bit;
 	uint16_t century;
 	time_t epoch;
 	struct tm epoch_tm;
+	bool as_unix_epoch;
 
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(0x00);  // Seconds Register

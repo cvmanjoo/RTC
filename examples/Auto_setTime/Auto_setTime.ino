@@ -14,9 +14,9 @@
 #include <I2C_RTC.h>
 
 //static DS1307 RTC;
-static DS3231 RTC;
+//static DS3231 RTC;
 //static DS3232 RTC;
-//static PCF8523 RTC;
+static PCF8523 RTC;
 //static PCF8563 RTC;
 //static MCP7940 RTC;
 
@@ -119,12 +119,13 @@ void setup()
 		RTC.setDateTime(__TIMESTAMP__);
         Serial.println(__TIMESTAMP__);
         //RTC.setDateTime("Fri Mar 08 00:01:53 2024");
-		
-        //RTC.setDateTime(__DATE__, __TIME__);
-		//Serial.print(__DATE__);
-		//Serial.print(" ");
-		//Serial.println(__TIME__);
-        //RTC.setDateTime("Dec 26 2009", "00:34:56");
+
+		// RTC.setDateTime(__DATE__, __TIME__);
+		// Serial.print(__DATE__);
+		// Serial.print(" ");
+		// Serial.println(__TIME__);
+
+		// RTC.setDateTime("Dec 26 2009", "00:34:56");
 
 		Serial.println("New Time Set, Reset Manually ");
 

@@ -76,10 +76,11 @@ class DS1307
         //DS1307();
 
         uint8_t begin();
+        //uint8_t begin(uint8_t sda, uint8_t scl);
 
         bool isConnected();
         bool isRunning();
-        
+
         void startClock();
         void stopClock();
 
@@ -91,7 +92,7 @@ class DS1307
 
         void setSeconds(uint8_t seconds);
         uint8_t getSeconds();
-        
+
         void setMinutes(uint8_t minutes);
         uint8_t getMinutes();       
 
@@ -103,7 +104,7 @@ class DS1307
 
         void setWeek(uint8_t week);
         uint8_t getWeek();
-        void updateWeek(); //?
+        void updateWeek();
 
         void setMonth(uint8_t month);
         uint8_t getMonth();       
@@ -114,17 +115,21 @@ class DS1307
         void setTime(uint8_t hour, uint8_t minute, uint8_t second);
         void setDate(uint8_t day, uint8_t month, uint16_t year);
 
-        void setEpoch(time_t epoch);
-        time_t getEpoch();
-        
         void setDateTime(String date, String time);
         void setDateTime(String timestamp);
 
-        tm getDateTime();
-        String getDateTimeString();
         String getTimeString();
         String getDateString();
         String getWeekString();
+        String getDateTimeString();
+
+        void setDateTime(tm);
+        tm getDateTime();
+
+        void setEpoch(time_t epoch);
+        time_t getEpoch();
+
+        //Chip Specific Functions
 
         void setOutPin(uint8_t mode);
         bool isOutPinEnabled();
@@ -176,10 +181,10 @@ class DS3231
 {
     public:
         uint8_t begin();
-        
+
         bool isConnected();
         bool isRunning();
-        
+
         void startClock();
         void stopClock();
 
@@ -189,42 +194,46 @@ class DS3231
         void setMeridiem(uint8_t meridiem);
         uint8_t getMeridiem();
 
-        void setSeconds(uint8_t second);
+        void setSeconds(uint8_t seconds);
         uint8_t getSeconds();
 
-        void setMinutes(uint8_t minute);
-        uint8_t getMinutes();
+        void setMinutes(uint8_t minutes);
+        uint8_t getMinutes();       
 
-        void setHours(uint8_t hour);
-        uint8_t getHours();
+        void setHours(uint8_t hours);
+        uint8_t getHours();       
 
         void setDay(uint8_t day);
         uint8_t getDay();
 
-        void setWeek(uint8_t week);    
+        void setWeek(uint8_t week);
         uint8_t getWeek();
         void updateWeek();
 
         void setMonth(uint8_t month);
-        uint8_t getMonth();
+        uint8_t getMonth();       
 
         void setYear(uint16_t year);
-        uint16_t getYear();
+        uint16_t getYear();        
 
-        void setEpoch(time_t epoch, bool is_unix_epoch=true);
-        time_t getEpoch(bool as_unix_epoch=true);
-
-        void setDate(uint8_t day, uint8_t month, uint16_t year);
         void setTime(uint8_t hour, uint8_t minute, uint8_t second);
-        
+        void setDate(uint8_t day, uint8_t month, uint16_t year);
+
         void setDateTime(String date, String time);
         void setDateTime(String timestamp);
-
-        tm getDateTime();
 
         String getTimeString();
         String getDateString();
         String getWeekString();
+        String getDateTimeString();
+
+        void setDateTime(tm);
+        tm getDateTime();
+
+        void setEpoch(time_t epoch);
+        time_t getEpoch();
+
+        //Chip Specific Functions
 
         //Alarm Functions
 
@@ -278,7 +287,7 @@ class DS3231
 
         float getTemp();
     
-    private:
+    protected:
         uint8_t _i2c_address = DS3231_ADDR;
 
         uint8_t _read_one_register(uint8_t reg_address);
@@ -294,12 +303,32 @@ class DS3231
 
 class DS3232 : public DS3231
 {
-    private:
-        uint8_t _i2c_address = DS3232_ADDR;
-        uint8_t _length = 236;
     public :
-        uint8_t read(uint8_t address);
-        void write(uint8_t address, uint8_t value);
+        //DS3232();
+        class SRAM
+        {
+            private:
+                uint8_t _length = 236;
+                uint16_t _crc16_update(uint16_t crc, uint8_t a);
+            public:
+                bool begin();
+                bool isConnected();
+
+                uint8_t read(uint8_t address);
+                void write(uint8_t address, uint8_t value);
+                void clear();
+
+                uint16_t getCRC16();
+                
+                // uint8_t operator[](uint8_t address);
+                // uint8_t& operator[](uint8_t address); 
+                
+                // void read(uint8_t address, uint8_t *buf, uint8_t size);
+                // void write(uint8_t address, uint8_t *buf, uint8_t size);
+                
+                uint8_t length();
+        };
+
 
 };
 /*
@@ -317,48 +346,61 @@ class DS3232 : public DS3231
 class PCF8563
 {
     public:
-        bool begin();
+		uint8_t begin();
 
-        bool isConnected();
+		bool isConnected();
+		bool isRunning();
 
-        bool isRunning(void);
-        void startClock();
-        void stopClock();
+		void startClock();
+		void stopClock();
 
-        uint8_t getHourMode();
-        uint8_t getMeridiem();
+		void setHourMode(uint8_t h_mode);
+		uint8_t getHourMode();
 
-        void setSeconds(uint8_t second);
-        uint8_t getSeconds();
-       
-        void setMinutes(uint8_t minute);
-        uint8_t getMinutes();
+		void setMeridiem(uint8_t meridiem);
+		uint8_t getMeridiem();
 
-        void setHours(uint8_t hour);
-        uint8_t getHours();      
+		void setSeconds(uint8_t seconds);
+		uint8_t getSeconds();
 
-        void setDay(uint8_t day);
-        uint8_t getDay();
+		void setMinutes(uint8_t minutes);
+		uint8_t getMinutes();       
 
-        void setWeek(uint8_t week);
-        uint8_t getWeek();
-        void updateWeek();
+		void setHours(uint8_t hours);
+		uint8_t getHours();       
 
-        void setMonth(uint8_t month);
-        uint8_t getMonth();
+		void setDay(uint8_t day);
+		uint8_t getDay();
 
-        void setYear(uint16_t year);
-        uint16_t getYear();
+		void setWeek(uint8_t week);
+		uint8_t getWeek();
+		void updateWeek();
 
-        void setDate(uint8_t day, uint8_t month, uint16_t year);
-        void setTime(uint8_t hour, uint8_t minute, uint8_t second);
+		void setMonth(uint8_t month);
+		uint8_t getMonth();       
 
-        void setDateTime(char* date, char* time);
-        void setDateTime(String timestamp);
+		void setYear(uint16_t year);
+		uint16_t getYear();        
 
-        void setEpoch(time_t epoch);
-        time_t getEpoch();
+		void setTime(uint8_t hour, uint8_t minute, uint8_t second);
+		void setDate(uint8_t day, uint8_t month, uint16_t year);
 
+		void setDateTime(String date, String time);
+		void setDateTime(String timestamp);
+
+		String getTimeString();
+		String getDateString();
+		String getWeekString();
+		String getDateTimeString();
+
+	    void setDateTime(tm rtc_time);
+        tm getDateTime();
+
+		void setEpoch(time_t epoch);
+		time_t getEpoch();
+
+		/* Chip Specific Functions */
+        
         //Alarm Functions
 
         //void enableAlarm();
@@ -391,18 +433,22 @@ class PCF8563
         bool isTimerEnabled();
         void enableTimer();
         void disableTimer();
-        void setTimer(uint8_t t_seconds);
-        uint8_t getTimer();
-
-        void enableTimerInterrupt(void);
-        void disableTimerInterrupt(void);
-
 
         bool getTimerFlag();
         void clearTimerFlag();
 
+        void enableTimerInterrupt(void);
+        void disableTimerInterrupt(void);
+
+        void setTimer(uint8_t t_seconds);
+        uint8_t getTimer();
+
+
+
     private:
 		uint8_t _i2c_address = PCF8563_ADDR;
+
+        uint8_t _calculateDayOfWeek(uint8_t day, uint8_t month, uint16_t year);
 
 		uint8_t bin2bcd(uint8_t val);
 		uint8_t bcd2bin(uint8_t val);
@@ -418,60 +464,72 @@ class PCF8563
 class PCF8523
 {
     public:
-        bool begin();
+     	uint8_t begin();
 
-        bool isRunning(void);
-        void startClock();
-        void stopClock();
-		
+		bool isConnected();
+		bool isRunning();
+
+		void startClock();
+		void stopClock();
+
 		void setHourMode(uint8_t h_mode);
 		uint8_t getHourMode();
 
 		void setMeridiem(uint8_t meridiem);
 		uint8_t getMeridiem();
 
-        void setSeconds(uint8_t second);
-        uint8_t getSeconds();
+		void setSeconds(uint8_t seconds);
+		uint8_t getSeconds();
 
-        void setMinutes(uint8_t minute);
-        uint8_t getMinutes();
+		void setMinutes(uint8_t minutes);
+		uint8_t getMinutes();       
 
-        void setHours(uint8_t hour);
-        uint8_t getHours();
+		void setHours(uint8_t hours);
+		uint8_t getHours();       
 
-        void setDay(uint8_t day);
-        uint8_t getDay();
+		void setDay(uint8_t day);
+		uint8_t getDay();
 
-        void setWeek(uint8_t week);
-        uint8_t getWeek();
-        void updateWeek();
-        
-        void setMonth(uint8_t month);
-        uint8_t getMonth();
+		void setWeek(uint8_t week);
+		uint8_t getWeek();
+		void updateWeek();
 
-        void setYear(uint16_t year);
-		uint16_t getYear();
+		void setMonth(uint8_t month);
+		uint8_t getMonth();       
 
-        void setDate(uint8_t day, uint8_t month, uint16_t year);
-        void setTime(uint8_t hour, uint8_t minute, uint8_t second);
-        
-        void setDateTime(char* date, char* time);
-        void setDateTime(String timestamp);
+		void setYear(uint16_t year);
+		uint16_t getYear();        
 
-        void setEpoch(time_t epoch);
-        time_t getEpoch();
+		void setTime(uint8_t hour, uint8_t minute, uint8_t second);
+		void setDate(uint8_t day, uint8_t month, uint16_t year);
+
+		void setDateTime(String date, String time);
+		void setDateTime(String timestamp);
+
+		String getTimeString();
+		String getDateString();
+		String getWeekString();
+		String getDateTimeString();
+
+        void setDateTime(tm);
+        tm getDateTime();
+
+		void setEpoch(time_t epoch);
+		time_t getEpoch();
+
+		/* Chip Specific Functions */
 
         //Alarm Functions
 
-        //void enableAlarm();
+        void enableAlarm();
         void disableAlarm();
         void clearAlarm();
 
         bool isAlarmEnabled();
         bool isAlarmTriggered();
         
-        void setAlarm(uint8_t hours, uint8_t minutes);
-        void setAlarm(uint8_t week,uint8_t day, uint8_t hours, uint8_t minutes);
+     //   void setAlarm(uint8_t hours, uint8_t minutes);
+        void setAlarm(uint8_t minutes,uint8_t hours, uint8_t days, uint8_t weekday);
         //DateTime getAlarm();
 
         //void setOutPin(uint8_t mode);
@@ -488,11 +546,15 @@ class PCF8523
     private:
 		uint8_t _i2c_address = PCF8523_ADDR;
 
-		uint8_t bin2bcd(uint8_t val);
+        uint8_t bin2bcd(uint8_t val);
 		uint8_t bcd2bin(uint8_t val);
 		
 		uint8_t _read_one_register(uint8_t reg_address);
         void _write_one_register(uint8_t reg_address, uint8_t reg_data);
+
+        uint8_t _calculateDayOfWeek(uint8_t day, uint8_t month, uint16_t year);
+
+
 };
 
 #define MCP7940_ADDR 0x6F
@@ -500,53 +562,62 @@ class PCF8523
 class MCP7940
 {
 	public:
+		uint8_t begin();
 
 		bool isConnected();
+		bool isRunning();
 
-		bool isRunning(void);
 		void startClock();
 		void stopClock();
-		
+
 		void setHourMode(uint8_t h_mode);
 		uint8_t getHourMode();
 
 		void setMeridiem(uint8_t meridiem);
 		uint8_t getMeridiem();
 
-		void setSeconds(uint8_t second);
+		void setSeconds(uint8_t seconds);
 		uint8_t getSeconds();
 
-		void setMinutes(uint8_t minute);
-		uint8_t getMinutes();
+		void setMinutes(uint8_t minutes);
+		uint8_t getMinutes();       
 
-		void setHours(uint8_t hour);
-		uint8_t getHours();
+		void setHours(uint8_t hours);
+		uint8_t getHours();       
 
 		void setDay(uint8_t day);
 		uint8_t getDay();
 
 		void setWeek(uint8_t week);
 		uint8_t getWeek();
-		// void updateWeek();
-		
+		void updateWeek();
+
 		void setMonth(uint8_t month);
-		uint8_t getMonth();
+		uint8_t getMonth();       
 
 		void setYear(uint16_t year);
-		uint16_t getYear();
+		uint16_t getYear();        
 
-        tm getDateTime();
-        tm getPowerDownDateTime();
-        tm getPowerUpDateTime();
+		void setTime(uint8_t hour, uint8_t minute, uint8_t second);
+		void setDate(uint8_t day, uint8_t month, uint16_t year);
 
-		// void setDate(uint8_t day, uint8_t month, uint16_t year);
-		// void setTime(uint8_t hour, uint8_t minute, uint8_t second);
-		
-		// void setDateTime(char* date, char* time);
+		void setDateTime(String date, String time);
 		void setDateTime(String timestamp);
 
-		// void setEpoch(time_t epoch);
-		// time_t getEpoch();
+		String getTimeString();
+		String getDateString();
+		String getWeekString();
+		String getDateTimeString();
+
+		tm getDateTime();
+
+		void setEpoch(time_t epoch);
+		time_t getEpoch();
+
+		//Chip Specific Functions
+
+        tm getPowerDownDateTime();
+        tm getPowerUpDateTime();
 
         bool doesPowerFailed();
         void clearPowerFail();
@@ -554,8 +625,6 @@ class MCP7940
         bool isExternalBatteryEnabled();
         void enableExternalBattery();
         void disableExternalBattery();
-
-
 
         uint8_t showRegister(uint8_t reg_address);
 
