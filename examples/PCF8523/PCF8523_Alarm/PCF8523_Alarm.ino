@@ -21,9 +21,10 @@ void setup()
 	RTC.startClock();
 
 	RTC.clearAlarm();
+	//setAlarm(uint8_t minutes,uint8_t hours, uint8_t days, uint8_t weekday)
 	RTC.setAlarm(41,3, -1, -1);
 
-	//setAlarm(uint8_t minutes,uint8_t hours, uint8_t days, uint8_t weekday)
+	
 
 	Serial.println("*** RTC PCF8523 Alarm Example ***");
 	Serial.print("Is Clock Running : ");

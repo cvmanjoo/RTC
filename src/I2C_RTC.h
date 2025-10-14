@@ -519,6 +519,9 @@ class PCF8523
 
 		/* Chip Specific Functions */
 
+        void softReset();
+        bool isBatteryLow();
+
         //Alarm Functions
 
         void enableAlarm();
@@ -537,11 +540,30 @@ class PCF8523
         //bool isSqweEnabled();
 
         //Timer Functions
-        bool isTimerEnabled();
-        void enableTimer();
-        void disableTimer();
-        void setTimer(uint8_t t_seconds);
-        uint8_t getTimer();
+
+        void enableTimerInterrupt();
+        void disableTimerInterrupt();
+
+        void enableTimerA();
+        void disableTimerA();
+        void clearTimerA();
+
+        
+
+        bool isTimerAEnabled();
+        bool isTimerATriggered();
+
+        void setTimerA(uint8_t t_seconds);
+        uint8_t getTimerA();
+
+        
+        void clearTimer();
+
+
+        // void enableTimer();
+        // void disableTimer();
+        // void setTimer(uint8_t t_seconds);
+        // uint8_t getTimer();
 
     private:
 		uint8_t _i2c_address = PCF8523_ADDR;

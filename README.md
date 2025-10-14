@@ -9,10 +9,9 @@ This library enables the functionality for clock reading, clock setting, alarms 
 |:---------:|:------:|:------:|:-------:|:-------:|:-------:|
 | Address   |  0x68  |  0x68  |   0x51  |   0x68  |  0x6F   |
 | 12 hours  |  Yes   |  Yes   |   No    |   Yes   |   Yes   |
-| Centuries |  0     |  1     |   1     |   1     |    1    |
+| Centuries |  1     |  2     |   1     |   1     |    1    |
 | Alarms    |  0     |  2     |   2     |   1     |    2    |
 | Timers    |  0     |  0     |   1     |   2     |    0    |
-
 
 
 # How to Install
@@ -36,6 +35,3 @@ Search RTC from Arduino Library
 
 ## Reference & Documentation
 * [RTC Wiki](../../wiki).
-
-
-

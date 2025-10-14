@@ -6,12 +6,17 @@ static DS3231 RTC;
 void setup()
 {
 	Serial.begin(115200);
-
 	while (!Serial); // wait for serial port to connect. Needed for native USB
-
 	RTC.begin(); //Not required if you are calling isConnected() function before calling other RTC functions
 
 	Serial.println();
+
+	if(RTC.isConnected() == false)
+    {
+        Serial.println("RTC Not Connected!");
+        while(true);
+    }
+
 	Serial.println("*** RTC DS3231 ***");
 	Serial.print("Is Clock Running : ");
 	if(RTC.isRunning())

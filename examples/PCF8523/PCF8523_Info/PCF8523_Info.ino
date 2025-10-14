@@ -8,6 +8,9 @@ void setup()
     Serial.begin(115200);
     while (!Serial); // wait for serial port to connect. Needed for native USB port only
     RTC.begin();
+
+	//RTC.softReset(); Re
+
     Serial.println();
 
     if(RTC.isConnected() == false)
@@ -34,14 +37,28 @@ void setup()
 		Serial.println("Yes");
 	else
 		Serial.println("No");
-	/*
+
+	Serial.print("Is Timer A Enabled : ");
+	if (RTC.isTimerAEnabled())
+		Serial.println("Yes");
+	else
+		Serial.println("No");
+
+	Serial.print("Is Timmer A Triggered : ");
+	if (RTC.isTimerATriggered())
+		Serial.println("Yes");
+	else
+		Serial.println("No");
+
+
+
+
 	Serial.print("Battery Status : ");
 	if (RTC.isBatteryLow())
 	Serial.println("Low");
 	else
 	Serial.println("Good");
-	*/
-	//RTC.set    
+ 
 
 }
 

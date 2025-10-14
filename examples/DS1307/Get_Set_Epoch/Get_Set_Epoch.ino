@@ -36,25 +36,30 @@ void setup()
 
     RTC.setHourMode(CLOCK_H12);
 
-    RTC.setEpoch(946684801); //SAT 01-01-2000 12:00:00 AM
-    Serial.print(RTC.getEpoch());
-    Serial.print(" - ");
-    Serial.println(RTC.getDateTimeString());
+    // RTC.setEpoch(946684801); //SAT 01-01-2000 12:00:00 AM
+    // Serial.print(RTC.getEpoch());
+    // Serial.print(" - ");
+    // Serial.println(RTC.getDateTimeString());
 
     RTC.setEpoch(1728674817); //FRI 11-10-2024 07:26:57 PM
     Serial.print(RTC.getEpoch());
     Serial.print(" - ");
     Serial.println(RTC.getDateTimeString());
 
-    RTC.setEpoch(4102444799); //THU 31-12-2099 11:59:59 PM
+	RTC.setEpoch(1760486280); //TUE 14-10-2025 11:58:00 PM
     Serial.print(RTC.getEpoch());
     Serial.print(" - ");
     Serial.println(RTC.getDateTimeString());
 
-    RTC.setDateTime(__TIMESTAMP__);
-    Serial.print(RTC.getEpoch());
-    Serial.print(" - ");
-    Serial.println(RTC.getDateTimeString());
+    // RTC.setEpoch(4102444799); //THU 31-12-2099 11:59:59 PM
+    // Serial.print(RTC.getEpoch());
+    // Serial.print(" - ");
+    // Serial.println(RTC.getDateTimeString());
+
+    // RTC.setDateTime(__TIMESTAMP__);
+    // Serial.print(RTC.getEpoch());
+    // Serial.print(" - ");
+    // Serial.println(RTC.getDateTimeString());
     
     RTC.startClock();
     //RTC.stopClock();

@@ -645,154 +645,128 @@ https://en.wikipedia.org/wiki/Epoch_(computing)
 
 void DS3231::setEpoch(time_t epoch)
 {
-	uint8_t h_mode, data, century;
-	uint16_t year;
+	#if defined(__AVR__)
+		if(epoch > UNIX_OFFSET) // 1970 to 2000
+			epoch = epoch - UNIX_OFFSET;
+		else
+			epoch = 0;
+	#endif
+
+	bool h_mode, meridiem, century_bit;
+	uint8_t reg_hours,reg_month,reg_years;
 	struct tm epoch_tm, *ptr_epoch_tm;
-	bool is_unix_epoch;
-
-	// adjust UNIX epoch to ARDUINO epoch, otherwise `tm` struct
-	// is one year and one (leap) day off.
-	if (is_unix_epoch)
-		epoch = epoch - UNIX_OFFSET;
-
+	
+	h_mode = bitRead(_read_one_register(R_HOURS), 6); //Get hour mode
+	
 	ptr_epoch_tm = gmtime(&epoch);
 	epoch_tm = *ptr_epoch_tm;
 
-	century = (epoch_tm.tm_year + 1900) / 100;	// Find Century 
-	year = (epoch_tm.tm_year + 1900) % 100;		//Converting to 2 Digit
-
-
 	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x00);  // Seconds Register
-	Wire.write(bin2bcd(epoch_tm.tm_sec));	//0x00 Seconds
-	Wire.write(bin2bcd(epoch_tm.tm_min));	//0x01 Minutes
-	Wire.endTransmission();
-	
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x02);
-	Wire.endTransmission();
-	
-	Wire.requestFrom(DS3231_ADDR, 1);
-	data = Wire.read();
-
-	h_mode = bitRead(data, 6);
-
-	
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x02);
-	Wire.write(bin2bcd(epoch_tm.tm_hour));	//0x02 Hours
-	Wire.write(bin2bcd(epoch_tm.tm_wday));	//0x03 Week Day
-	Wire.write(bin2bcd(epoch_tm.tm_mday));	//0x04 Date 
-	Wire.write(bin2bcd(epoch_tm.tm_mon+1));	//0x05 Month
-	Wire.write(bin2bcd(year));				//0x06 Year
-	Wire.endTransmission();
-
-	/* Convert time to 24Hour if it is in 12 Hour */
-	
-	if (h_mode == CLOCK_H12)
+	Wire.write(R_SECONDS);  // Seconds Register
+	Wire.write(bin2bcd(epoch_tm.tm_sec));		//0x00 Seconds
+	Wire.write(bin2bcd(epoch_tm.tm_min));		//0x01 Minutes
+	if (h_mode == CLOCK_H24)
 	{
-		//Serial.println("I'm here!");
-		Wire.beginTransmission(DS3231_ADDR);
-		Wire.write(0x02);  // Hour Register
-		
-		if (epoch_tm.tm_hour == 0)
-		{
-			epoch_tm.tm_hour = bin2bcd(12);
-			bitSet(epoch_tm.tm_hour, 6);
-			bitClear(epoch_tm.tm_hour, 5);
-			Wire.write(epoch_tm.tm_hour);
-		}
-		else if (epoch_tm.tm_hour <= 11)
-		{
-			epoch_tm.tm_hour = bin2bcd(epoch_tm.tm_hour);
-			bitSet(epoch_tm.tm_hour, 6);
-			bitClear(epoch_tm.tm_hour, 5);
-			Wire.write(epoch_tm.tm_hour);
-		}
-		else if (epoch_tm.tm_hour == 12)
-		{
-			epoch_tm.tm_hour = bin2bcd(epoch_tm.tm_hour);
-			bitSet(epoch_tm.tm_hour, 6);
-			bitSet(epoch_tm.tm_hour, 5);
-			Wire.write(epoch_tm.tm_hour);
-		}
-		else
-		{
-			epoch_tm.tm_hour -= 12;
-			epoch_tm.tm_hour = bin2bcd(epoch_tm.tm_hour);
-			bitSet(epoch_tm.tm_hour, 6);
-			bitSet(epoch_tm.tm_hour, 5);
-			Wire.write(epoch_tm.tm_hour);
-		}
-		Wire.endTransmission();
+		Wire.write(bin2bcd(epoch_tm.tm_hour));	//0x02 Hours
 	}
-	/* Write Century Bit to Century Month Register (0x05) */
+	else if (h_mode == CLOCK_H12)
+	{
+		meridiem = (epoch_tm.tm_hour >= 12);
+		if (epoch_tm.tm_hour == 0)
+			epoch_tm.tm_hour = 12;
+		if (epoch_tm.tm_hour > 12)
+			epoch_tm.tm_hour -= 12;
+		reg_hours = bin2bcd(epoch_tm.tm_hour);
+		bitWrite(reg_hours, 5, meridiem);
+		bitSet(reg_hours, 6);
+		Wire.write(reg_hours); //0x02 Hours
+	}
+	Wire.write(bin2bcd(epoch_tm.tm_wday+1));	//0x03 Week Day
+	Wire.write(bin2bcd(epoch_tm.tm_mday));		//0x04 Date
 
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x05);		// Century and month Register
-	Wire.endTransmission();
-
-	Wire.requestFrom(DS3231_ADDR, 1);
-	data = Wire.read();
-
-	// Set century bit to 1 for year > 2000;
-	if(century == 20)
-		bitSet(data,7);
+	if(epoch_tm.tm_year < 100)
+		century_bit = 1; // 1900s
 	else
-		bitClear(data,7);
-	
-	// Write Century bit to Month Register(0x05)
-	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x05);  //
-	Wire.write(data);
+		century_bit = 0; // 2000s
+
+	reg_month = bin2bcd(epoch_tm.tm_mon+1); //Converting to 1-12
+	bitWrite(reg_month, 7, century_bit); 	// Set Century Bit in Month Register(0x05)
+	Wire.write(reg_month);					//0x05 Month with Century Bit
+
+	reg_years = epoch_tm.tm_year % 100; //Converting to 2 Digit
+	Wire.write(bin2bcd(reg_years));				//0x06 Year
+
 	Wire.endTransmission();
 }
-
-
-
-
 
 /*-----------------------------------------------------------
 getEpoch()
 -----------------------------------------------------------*/
-//time_t DS3231::getEpoch(bool as_unix_epoch=true)
 time_t DS3231::getEpoch()
 {
-	uint8_t century_bit;
-	uint16_t century;
+
+	bool h_mode, meridiem, century_bit;
+	uint8_t reg_hours,reg_month;
+	int16_t reg_years;
+
 	time_t epoch;
 	struct tm epoch_tm;
-	bool as_unix_epoch;
+
 
 	Wire.beginTransmission(DS3231_ADDR);
-	Wire.write(0x00);  // Seconds Register
+	Wire.write(R_SECONDS);  // Seconds Register
 	Wire.endTransmission();
 	Wire.requestFrom(DS3231_ADDR,7);
 
 	epoch_tm.tm_sec = bcd2bin(Wire.read());		//0x00 Seconds
 	epoch_tm.tm_min = bcd2bin(Wire.read());		//0x01 Minutes
-	epoch_tm.tm_hour = bcd2bin(Wire.read());	//0x02 Hours
-	epoch_tm.tm_wday = bcd2bin(Wire.read());	//0x03 Week Day
+
+	reg_hours = Wire.read();					//0x02 Hours
+	h_mode = bitRead(reg_hours, 6);
+	
+	if (h_mode == CLOCK_H24)
+	{
+		epoch_tm.tm_hour = bcd2bin(reg_hours);	
+	}
+	else //h_mode == CLOCK_H12
+	{
+		meridiem = bitRead(reg_hours, 5);
+		bitClear(reg_hours, 6);
+		bitClear(reg_hours, 5);
+		reg_hours = bcd2bin(reg_hours);
+
+		if (meridiem == HOUR_PM && reg_hours != 12)
+			epoch_tm.tm_hour += 12;
+		else if (meridiem == HOUR_PM && reg_hours == 12)
+			epoch_tm.tm_hour = 12;
+		else if (meridiem == HOUR_AM && reg_hours == 12)
+			epoch_tm.tm_hour = 0;
+		else
+			epoch_tm.tm_hour = reg_hours;
+	}
+	epoch_tm.tm_wday = Wire.read()-1;	//0x03 Week Day
 	epoch_tm.tm_mday = bcd2bin(Wire.read());	//0x04 Date
-	epoch_tm.tm_mon = Wire.read();				//0x05 Months
-	epoch_tm.tm_year = bcd2bin(Wire.read());	//0x06 Years
+	
+	reg_month = Wire.read();					//0x05 Months
+	century_bit = bitRead(reg_month, 7);
+	bitClear(reg_month,7);
+	epoch_tm.tm_mon = bcd2bin(reg_month)-1;
 
-	// Read Century Bit from Month Register
-	century_bit = bitRead(epoch_tm.tm_mon, 7);
-	bitClear(epoch_tm.tm_mon,7);
-	epoch_tm.tm_mon = bcd2bin(epoch_tm.tm_mon)-1;
-
-	if(century_bit == 0)
-		century = 1900;
+	reg_years = bcd2bin(Wire.read());	//0x06 Years
+	
+	if(century_bit == 1)
+		epoch_tm.tm_year = reg_years;
 	else
-		century = 2000;
-
-	epoch_tm.tm_year = epoch_tm.tm_year + century - 1870;
+		epoch_tm.tm_year = reg_years + 100;
 
 	epoch = mktime(&epoch_tm);
-	if(as_unix_epoch)
-		epoch += UNIX_OFFSET;
-	return (epoch);
+
+	#if defined(__AVR__)
+		epoch = epoch + UNIX_OFFSET;		
+		return (epoch);
+	#else
+		return (epoch);
+	#endif
 }
 
 
@@ -805,7 +779,7 @@ String DS3231::getTimeString()
 	Wire.beginTransmission(DS3231_ADDR);
 	Wire.write(R_SECONDS);
 	Wire.endTransmission();
-	Wire.requestFrom(DS1307_ADDR, 3);
+	Wire.requestFrom(DS3231_ADDR, 3);
 
 	seconds = bcd2bin(Wire.read());
 	minutes = bcd2bin(Wire.read());

@@ -45,44 +45,38 @@ bool PCF8523::isConnected()
 
 bool PCF8523::isRunning(void)
 {
-    uint8_t reg_data;
-    bool stop_bit;
+    bool stop_bit, os_bit;
+	
+	stop_bit = bitRead(_read_one_register(R_CONTROL_1),5);
+	os_bit = bitRead(_read_one_register(R_SECONDS),7);
 
-	reg_data = _read_one_register(R_CONTROL_1);
-	stop_bit = bitRead(reg_data,5);
+	if(os_bit == 0 && stop_bit == 0) // Oscillator Stop Flag is set
+		return true; //Optimise this in future
+	else
+		return false;
 
-	// 0 means Running 
-	// 1 means Stopped
-    return (!stop_bit); 
+	// // 0 means Running 
+	// // 1 means Stopped
+    // return (!stop_bit); 
 }
 
 void PCF8523::startClock(void)
 {
     uint8_t reg_data;
-    bool stop_bit;
 
-	reg_data = _read_one_register(R_CONTROL_1);
-	stop_bit = bitRead(reg_data,5);
-
-	// 0 means Running
-	// 1 means Stopped
-	bitClear(reg_data,5);
-	_write_one_register(R_CONTROL_1,reg_data);
+	reg_data = _read_one_register(R_SECONDS);
+	bitClear(reg_data,7);	// Clear OS Bit to 0
+	_write_one_register(R_SECONDS,reg_data);
 
 }
 
 void PCF8523::stopClock(void)
 {
     uint8_t reg_data;
-    bool stop_bit;
 
-	reg_data = _read_one_register(R_CONTROL_1);
-	stop_bit = bitRead(reg_data,5);
-
-	// 0 means Running
-	// 1 means Stopped
-	bitSet(reg_data,5);
-	_write_one_register(R_CONTROL_1,reg_data);
+	reg_data = _read_one_register(R_SECONDS);
+	bitSet(reg_data,7);	// Set OS Bit to 1
+	_write_one_register(R_SECONDS,reg_data);
 }
 
 void PCF8523::setHourMode(uint8_t h_mode)
@@ -855,6 +849,19 @@ time_t PCF8523::getEpoch()
     return (epoch);
 }
 
+// Reset the RTC by writing 0x58 to Control_1 Register
+
+void PCF8523::softReset()
+{
+	_write_one_register(R_CONTROL_1,0x58);
+}
+
+bool PCF8523::isBatteryLow()
+{
+   	_read_one_register(R_CONTROL_3);
+	return (bitRead(_read_one_register(R_CONTROL_3), 2)); // BLF Bit
+}
+
 void PCF8523::enableAlarm()
 {
 	uint8_t alarm_registers[4];
@@ -951,6 +958,98 @@ void PCF8523::setAlarm(uint8_t minutes,uint8_t hours, uint8_t days, uint8_t week
 		_write_one_register(R_WEEKDAY_ALARM,weekday);
 	}
 }
+
+//Timer functions
+
+
+void PCF8523::enableTimerA()
+{
+	
+	uint8_t reg_data;
+	reg_data = _read_one_register(R_TMR_CLOCKOUT_CTRL);
+
+	//Write 01 to TMR_A_CTRL to enable Timer A in Countdown timed out mode
+	bitClear(reg_data, 0);
+	bitSet(reg_data, 1);
+
+	// Write back to Register
+	_write_one_register(R_TMR_CLOCKOUT_CTRL,reg_data); 
+
+	// Set Timer A Frequency to 1Hz
+	_write_one_register(R_TMR_A_FREQ_CTRL,0b10); 
+
+}
+
+void PCF8523::disableTimerA()
+{
+	uint8_t reg_data;
+	reg_data = _read_one_register(R_CONTROL_2);
+	bitClear(reg_data, 2); // Disable Timer
+	_write_one_register(R_CONTROL_2,reg_data);
+}
+
+void PCF8523::clearTimerA()
+{
+	uint8_t reg_data;
+	reg_data = _read_one_register(R_CONTROL_2);
+	bitClear(reg_data, 1); // Clear Timer Flag
+	_write_one_register(R_CONTROL_2,reg_data);
+}
+
+bool PCF8523::isTimerAEnabled()
+{
+	uint8_t reg_data;
+	reg_data = _read_one_register(R_TMR_CLOCKOUT_CTRL);
+
+	reg_data = reg_data & 0x06; // Masking other bits
+	reg_data = reg_data >> 1; // Shifting to get Timer A bits in LSB
+	if(reg_data == 0b00 || reg_data == 0b11)
+		return false; // Timer A Disabled
+	else
+		return true; // Timer A Enabled
+}
+
+bool PCF8523::isTimerATriggered()
+{
+	uint8_t reg_data;
+	reg_data = _read_one_register(R_CONTROL_2);
+	return (bitRead(reg_data, 6)); // TF Bit
+}
+
+void PCF8523::setTimerA(uint8_t t_seconds)
+{
+	if(t_seconds >= 1 && t_seconds <= 255)
+	{
+		_write_one_register(R_TMR_A_REG, t_seconds); // Set Timer A value
+	}
+}
+
+uint8_t PCF8523::getTimerA()
+{
+	return (_read_one_register(R_TMR_A_REG));
+}
+
+
+
+// void PCF8523::setSquareWave(uint8_t rate)
+// {
+// 	uint8_t reg_data;
+// 	reg_data = _read_one_register(R_CONTROL_2);
+	
+// 	if(rate == SQWAVE_OFF || rate == SQWAVE_1HZ || rate == SQWAVE_4096HZ
+// 		|| rate == SQWAVE_8192HZ || rate == SQWAVE_32768HZ)
+// 	{
+// 		bitWrite(reg_data, 4, (rate >> 1) & 0x01); // RS1
+// 		bitWrite(reg_data, 5, (rate >> 0) & 0x01); // RS0
+// 		if(rate == SQWAVE_OFF)
+// 			bitClear(reg_data, 3); // Disable Square Wave Output
+// 		else
+// 			bitSet(reg_data, 3); // Enable Square Wave Output
+		
+// 		_write_one_register(R_CONTROL_2,reg_data);
+// 	}
+// }
+
 
 
 /**************************************************************

@@ -1,6 +1,14 @@
 
 # Change Log
 
+## v1.12.0
+
+* [DS1307] Fixed Epoch Issues #34, #23
+* [DS3231] Fixed Epoch Issues #16
+* [PCF8523] Added Alarm functions.
+* [PCF8523] Added function softReset();
+* [PCF8523] Added function isBatteryLow();
+
 ## v1.11.0
 
 * Updated PCF8563 and PCF8523 functions and examples

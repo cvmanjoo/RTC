@@ -148,8 +148,7 @@ void DS1307::setSeconds(uint8_t seconds)
 	uint8_t reg_data, ch_bit;
 	if (seconds >= 00 && seconds <= 59)
 	{
-		reg_data = _read_one_register(R_SECONDS);
-		ch_bit = bitRead(reg_data, CH);
+		ch_bit = bitRead(_read_one_register(R_SECONDS), CH);
 		seconds = bin2bcd(seconds);
 		bitWrite(seconds,CH,ch_bit);
 		_write_one_register(R_SECONDS,seconds);
@@ -604,75 +603,61 @@ AVR is still under testing.
 
 void DS1307::setEpoch(time_t epoch)
 {
-	struct tm epoch_tm, * ptr_epoch_tm;
-	uint8_t reg_hours, reg_seconds, h_mode, ch_bit;
-	uint8_t day, month, hours, week, minutes, seconds, year;
-	bool meridiem;
-	
+
+	bool ch_bit, h_mode, meridiem;
+	uint8_t reg_seconds, reg_hours;;
+	struct tm epoch_tm, *ptr_epoch_tm;
+
 	if(epoch >= UNIX_OFFSET)
 	{
-		reg_hours   = _read_one_register(R_HOURS);
-		reg_seconds = _read_one_register(R_SECONDS);
-
-		h_mode = bitRead(reg_hours, 6); //Get hour mode
-		ch_bit = bitRead(reg_seconds, CH); // Check the oscillator status to retain the status
-
-		#if defined(__AVR__)
-			epoch = epoch - UNIX_OFFSET;		
+		#if defined(ARDUINO_ARCH_AVR)
+			epoch = epoch - UNIX_OFFSET;
 		#endif
+			
+		ch_bit = bitRead(_read_one_register(R_SECONDS), CH); // Check the oscillator status to retain the status
+		h_mode = bitRead(_read_one_register(R_HOURS), 6); //Get hour mode
 
 		ptr_epoch_tm = gmtime(&epoch);
 		epoch_tm = *ptr_epoch_tm;
 
-		// Serial.println(epoch);
-		// Serial.println(epoch_tm.tm_sec);
-		// Serial.println(epoch_tm.tm_min);
-		// Serial.println(epoch_tm.tm_hour);
-		// Serial.println(epoch_tm.tm_wday);
-		// Serial.println(epoch_tm.tm_mday);
-		// Serial.println(epoch_tm.tm_mon);
-		// Serial.println(epoch_tm.tm_year);
-
-		seconds = epoch_tm.tm_sec;
-		minutes = epoch_tm.tm_min;
-		hours = epoch_tm.tm_hour;
-		week = epoch_tm.tm_wday + 1;
-		day = epoch_tm.tm_mday;
-		month = epoch_tm.tm_mon + 1;
-		year = epoch_tm.tm_year % 100;
-
 		Wire.beginTransmission(DS1307_ADDR);
 		Wire.write(R_SECONDS);
 
-		seconds = bin2bcd(seconds);
-		bitWrite(seconds,CH,ch_bit);
-		Wire.write(seconds);
+		reg_seconds = bin2bcd(epoch_tm.tm_sec);
+		bitWrite(reg_seconds,CH,ch_bit);
+		Wire.write(reg_seconds);	//0x00 Seconds
 		
-		Wire.write(bin2bcd(minutes));
+		Wire.write(bin2bcd(epoch_tm.tm_min));		//0x01 Minutes
 		
 		if (h_mode == CLOCK_H24)
 		{
-			Wire.write(bin2bcd(hours));
+			Wire.write(bin2bcd(epoch_tm.tm_hour));	//0x02 Hours
 		}
 		else if (h_mode == CLOCK_H12)
 		{
-			meridiem = (hours >= 12);
-			if (hours == 0)
-				hours = 12;
-			if (hours > 12)
-				hours -= 12;
-			hours = bin2bcd(hours);
-			bitWrite(hours, 5, meridiem);
-			bitSet(hours, 6);
-			Wire.write(hours);
+			meridiem = (epoch_tm.tm_hour >= 12);
+			if (epoch_tm.tm_hour == 0)
+				epoch_tm.tm_hour = 12;
+			if (epoch_tm.tm_hour > 12)
+				epoch_tm.tm_hour -= 12;
+
+			reg_hours = bin2bcd(epoch_tm.tm_hour);
+			bitWrite(reg_hours, 5, meridiem);
+			bitSet(reg_hours, 6);
+			Wire.write(reg_hours); //0x02 Hours
 		}
-		
-		Wire.write(week);
-		Wire.write(bin2bcd(day));
-		Wire.write(bin2bcd(month));
-		Wire.write(bin2bcd(year));
-		Wire.endTransmission();
+
+		Wire.write(epoch_tm.tm_wday + 1);			//0x03 Day of week
+		Wire.write(bin2bcd(epoch_tm.tm_mday));		//0x04 Date
+		Wire.write(bin2bcd(epoch_tm.tm_mon + 1));	//0x05 Month
+		Wire.write(bin2bcd((epoch_tm.tm_year) % 100));		//0x06 Year
+		Wire.endTransmission();	
 	}
+	else
+	{
+		//Serial.println("Error: Invalid Epoch");
+	}
+
 }
 
 /*-----------------------------------------------------------
@@ -680,8 +665,10 @@ getEpoch()
 -----------------------------------------------------------*/
 time_t DS1307::getEpoch()
 {
-	uint8_t seconds, minutes, hours, week, day, month, year, meridiem, h_mode;
-	//uint16_t year;
+
+	bool h_mode, meridiem, century_bit;
+	uint8_t reg_seconds, reg_hours;
+
 	time_t epoch;
 	struct tm epoch_tm;
 
@@ -690,68 +677,56 @@ time_t DS1307::getEpoch()
 	Wire.endTransmission();
 	Wire.requestFrom(DS1307_ADDR, 7);
 
-	seconds = Wire.read();
-	bitClear(seconds, 7);
-	epoch_tm.tm_sec = bcd2bin(seconds);
+	reg_seconds = Wire.read(); //0x00 Seconds
 
-	minutes = Wire.read();
-	epoch_tm.tm_min = bcd2bin(minutes);
+	epoch_tm.tm_sec = bcd2bin(bitClear(reg_seconds,CH));		
+	epoch_tm.tm_min = bcd2bin(Wire.read());		//0x01 Minutes
 
-	hours = Wire.read();
-	h_mode = bitRead(hours, 6);
-	meridiem = bitRead(hours, 5); 
-	
+	reg_hours = Wire.read();					//0x02 Hours
+	h_mode = bitRead(reg_hours, 6);
+
 	if (h_mode == CLOCK_H24)
 	{
-		epoch_tm.tm_hour = bcd2bin(hours);
+		epoch_tm.tm_hour = bcd2bin(reg_hours);	
 	}
 	else //h_mode == CLOCK_H12
-	{	
-		bitClear(hours, 5);
-		bitClear(hours, 6);
-		if(meridiem == HOUR_AM)
+	{
+		meridiem = bitRead(reg_hours, 5);
+		bitClear(reg_hours, 6);
+		bitClear(reg_hours, 5);
+		reg_hours = bcd2bin(reg_hours);
+
+		if (meridiem == HOUR_PM && reg_hours != 12)
 		{
-			if(bcd2bin(hours) == 12)
-				epoch_tm.tm_hour = 0;
-			else
-				epoch_tm.tm_hour = bcd2bin(hours);
+			epoch_tm.tm_hour = reg_hours + 12;
 		}
-		else //if (meridiem == HOUR_PM)
-		{	if(bcd2bin(hours) == 12)
-				epoch_tm.tm_hour = 12;
-			else
-				epoch_tm.tm_hour = bcd2bin(hours) + 12;
+		else if (meridiem == HOUR_PM && reg_hours == 12)
+		{
+			epoch_tm.tm_hour = 12;
+		}
+		else if (meridiem == HOUR_AM && reg_hours == 12)
+		{	
+			epoch_tm.tm_hour = 0;
+		}
+		else
+		{
+			epoch_tm.tm_hour = reg_hours;
 		}
 	}
 
-	week = Wire.read();
-	epoch_tm.tm_wday = week - 1;
-
-	day = Wire.read();
-	epoch_tm.tm_mday = bcd2bin(day);
-	
-	month = Wire.read();
- 	epoch_tm.tm_mon  = bcd2bin(month) - 1;
-
-	year = Wire.read();
-	epoch_tm.tm_year = bcd2bin(year) + 100;
-
-	// Serial.println(epoch_tm.tm_sec);
-	// Serial.println(epoch_tm.tm_min);
-	// Serial.println(epoch_tm.tm_hour);
-	// Serial.println(epoch_tm.tm_wday);
-	// Serial.println(epoch_tm.tm_mday);
-	// Serial.println(epoch_tm.tm_mon);
-	// Serial.println(epoch_tm.tm_year);
+	epoch_tm.tm_wday = Wire.read()-1;				//0x03 Week Day
+	epoch_tm.tm_mday = bcd2bin(Wire.read());		//0x04 Date
+	epoch_tm.tm_mon  = bcd2bin(Wire.read()) - 1;	//0x05 Months
+	epoch_tm.tm_year = bcd2bin(Wire.read()) + 100;	//0x06 Years since 1900
 	
 	epoch = mktime(&epoch_tm);
 
-	#if defined(__AVR__)
-		//Serial.println("Debug;");
+	#if defined(ARDUINO_ARCH_AVR)
 		epoch = epoch + UNIX_OFFSET;
+		return (epoch);
+	#else
+		return (epoch);
 	#endif
-
-	return (epoch);
 }
 
 /* SQW/OUT pin functions */
